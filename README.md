@@ -1,6 +1,6 @@
-# SEO Rank Tracker
+# SitePulse 
 
-**SEO Rank Tracker** is an AI-powered SEO analyzer built with React, Vite, and Tailwind CSS. It provides instant SEO audits, performance scores, keyword analysis, and actionable recommendations for any website.
+**SitePulse** is an AI-powered SEO analyzer built with React, Vite, and Tailwind CSS. It provides instant SEO audits, performance scores, keyword analysis, and actionable recommendations for any website.
 
 ## Features
 

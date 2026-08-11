@@ -1,6 +1,6 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useTheme } from "../context/ThemeContext";
-import { Search, BarChart3, History, LogOut, Menu, X, Target, Sun, Moon, ChartNoAxesColumnIcon } from "lucide-react";
+import { Search, BarChart3, History, LogOut, Menu, X, Target, Sun, Moon, Activity } from "lucide-react";
 import { useState } from "react";
 
 export default function Navbar() {
@@ -29,8 +29,8 @@ export default function Navbar() {
                 <div className="flex items-center justify-between h-16">
                     {/* Logo */}
                     <Link to="/" className="flex items-center gap-2 group">
-                        <ChartNoAxesColumnIcon />
-                        <span className="text-xl tracking-tight text-foreground">Rank Pilot</span>
+                        <Activity />
+                        <span className="text-xl tracking-tight text-foreground">SitePulse</span>
                     </Link>
 
                     {/* Desktop nav */}

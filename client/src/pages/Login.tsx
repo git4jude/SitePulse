@@ -1,16 +1,37 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Mail, Lock, Loader2, Activity, User2Icon } from "lucide-react";
+import { useUser } from "../context/UserContext";
+import { toast } from "react-hot-toast";
 
 export default function Login({ state }: { state: string }) {
     const [isLoginState, setIsLoginState] = useState(state === "login");
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [loading] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const {login, register} = useUser()
+    const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
 
     const handleSubmit = async (e: React.SubmitEvent) => {
         e.preventDefault();
+        setLoading(true);
+
+        let result;
+        if(isLoginState){
+            result = await login(email, password);
+        }else{
+            result = await register(name, email, password);
+        }
+
+        if(result.success){
+            const redirect = searchParams.get("redirect") || "/dashboard";
+            navigate(redirect, { replace: true });
+        }else{
+            toast.error(result.message || "An error occurred. Please try again.");
+        }
+        setLoading(false);
     };
 
     return (

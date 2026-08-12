@@ -33,7 +33,7 @@ export const registerUser = async (req, res) => {
     // Generate JWT token
     const token = generateToken(newUser._id);
 
-    res.status(201).json({ success: true, message: 'User registered successfully', token, newUser });
+    res.status(201).json({ success: true, message: 'User registered successfully', token, user: newUser });
 
   } catch (error) {
     console.error('Register error:', error);

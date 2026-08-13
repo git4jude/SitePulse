@@ -1,8 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, Target, Globe, Clock, TrendingUp, TrendingDown, Minus, RefreshCw, AlertCircle, ExternalLink, Trophy, Users, Calendar, Loader2 } from "lucide-react";
-import { dummyWebsiteRanking } from "../assets/assets";
+import { useUser } from "../context/UserContext";
 
 interface RankHistoryEntry {
     date: string;
@@ -38,6 +37,7 @@ interface TrackingData {
 }
 
 export default function RankDetail() {
+    const {api} = useUser()
     const { id } = useParams();
     const [tracking, setTracking] = useState<TrackingData | null>(null);
     const [loading, setLoading] = useState(true);
@@ -46,19 +46,50 @@ export default function RankDetail() {
     const chartRef = useRef<HTMLCanvasElement>(null);
 
     const fetchTracking = async () => {
-        setTimeout(() => {
-            setTracking(dummyWebsiteRanking);
-            setLoading(false);
-        }, 1000);
+        if (!id) return;
+        try {
+            const res = await api.get(`/rank/${id}`);
+            if (res.data.success) {
+                setTracking(res.data.keyword);
+                if (res.data.keyword.status === "checking") {
+                    setTimeout(fetchTracking, 3000);
+                    return;
+                }
+            }
+        } catch (error) {
+            console.error("Failed to fetch tracking", error);
+            setTracking(null);
+        }
+        setLoading(false);
     };
 
     const handleRefresh = async () => {
         if (!tracking) return;
         setRefreshing(true);
-        setTimeout(() => {
-            setTracking(dummyWebsiteRanking);
+        try {
+            const res = await api.post(`/rank/${tracking._id}/refresh`);
+            if (res.data.success) {
+                setTracking(res.data.keyword);
+
+                const pollInterval = setInterval(async () => {
+                    try {
+                        const check = await api.get(`/rank/${tracking._id}`);
+                        if (check.data.keyword.status !== "checking") {
+                            clearInterval(pollInterval);
+                            setTracking(check.data.keyword);
+                            setRefreshing(false);
+                        }
+                    } catch (error) {
+                        console.error(error);
+                    }
+                }, 3000);
+            } else {
+                setRefreshing(false);
+            }
+        } catch (error) {
+            console.error("Failed to refresh tracking", error);
             setRefreshing(false);
-        }, 1000);
+        }
     };
 
     const drawChart = () => {

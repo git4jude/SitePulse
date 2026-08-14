@@ -112,6 +112,10 @@ button {
     border: 1px solid var(--glass-border);
 }
 
+.landing-purple-theme {
+    --accent: #9333EA;
+}
+
 /* gradients */
 .gradient-text {
     background: linear-gradient(135deg, var(--primary), var(--accent));
@@ -206,6 +210,60 @@ button {
 .bg-dot-pattern {
     background-image: radial-gradient(var(--primary) 1px, transparent 1px);
     background-size: 24px 24px;
+}
+
+/* Sign-in page ambient motion + load-in stagger */
+@keyframes signin-blob-drift-1 {
+    0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.5; }
+    50% { transform: translate(40px, 30px) scale(1.15); opacity: 0.8; }
+}
+@keyframes signin-blob-drift-2 {
+    0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.45; }
+    50% { transform: translate(-30px, -25px) scale(1.1); opacity: 0.75; }
+}
+@keyframes signin-blob-drift-3 {
+    0%, 100% { transform: translate(0, 0) scale(0.95); opacity: 0.35; }
+    50% { transform: translate(20px, -35px) scale(1.1); opacity: 0.65; }
+}
+@keyframes signin-hotspot-pulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(167, 139, 250, 0.45), 0 0 20px 4px rgba(139, 92, 246, 0.35);
+        opacity: 0.7;
+    }
+    50% {
+        box-shadow: 0 0 0 14px rgba(167, 139, 250, 0), 0 0 34px 10px rgba(139, 92, 246, 0.55);
+        opacity: 1;
+    }
+}
+@keyframes signin-fade-in {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes signin-ken-burns {
+    0% { transform: scale(1); }
+    100% { transform: scale(1.05); }
+}
+.signin-ken-burns {
+    animation: signin-ken-burns 20s ease-in-out infinite alternate;
+}
+
+.signin-blob-1 { animation: signin-blob-drift-1 18s ease-in-out infinite; }
+.signin-blob-2 { animation: signin-blob-drift-2 15s ease-in-out infinite; }
+.signin-blob-3 { animation: signin-blob-drift-3 20s ease-in-out infinite; }
+.signin-hotspot { animation: signin-hotspot-pulse 3s ease-in-out infinite; }
+.signin-fade-in {
+    opacity: 0;
+    animation: signin-fade-in 420ms ease-out forwards;
+    animation-delay: var(--signin-delay, 0ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .signin-blob-1, .signin-blob-2, .signin-blob-3, .signin-hotspot, .signin-fade-in, .signin-ken-burns {
+        animation: none !important;
+    }
+    .signin-fade-in { opacity: 1; transform: none; }
+    .signin-ken-burns { transform: scale(1); }
 }
 
 /* Custom scrollbar */

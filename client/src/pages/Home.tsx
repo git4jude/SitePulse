@@ -6,7 +6,7 @@ import Footer from "../components/home/Footer";
 
 export default function Home() {
     return (
-        <div className="min-h-screen">
+        <div className="min-h-screen landing-purple-theme">
             <Hero />
             <Features />
             <HowItWorks />

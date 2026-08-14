@@ -31,8 +31,8 @@ export default function Navbar() {
                 <div className="flex items-center justify-between h-16">
                     {/* Logo */}
                     <Link to="/" className="flex items-center gap-2 group">
-                        <Activity />
-                        <span className="text-xl tracking-tight text-foreground">SitePulse</span>
+                        <Activity className="text-[#9333EA]" />
+                        <span className="text-xl tracking-tight text-[#9333EA]">SitePulse</span>
                     </Link>
 
                     {/* Desktop nav */}

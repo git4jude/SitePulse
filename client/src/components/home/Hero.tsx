@@ -14,10 +14,10 @@ export default function Hero() {
 
     return (
         <section className="max-w-2xl mx-auto px-4 py-40 sm:py-44 min-h-screen text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary/2 rounded-full text-xs text-primary mb-6 border border-primary/10">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary/2 rounded-full text-xs text-primary mb-6 border border-primary/15">
                 <div className="relative flex items-center justify-center">
-                    <div className="absolute bg-blue-600 size-2 rounded-full animate-ping"></div>
-                    <div className="bg-blue-600 size-1.5 rounded-full"></div>
+                    <div className="absolute bg-accent size-2 rounded-full animate-ping"></div>
+                    <div className="bg-accent size-1.5 rounded-full"></div>
                 </div>
                 Powered by BrowserBase & Gemini AI
             </div>

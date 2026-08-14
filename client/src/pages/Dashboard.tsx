@@ -19,7 +19,7 @@ interface AnalysisSummary {
 }
 
 export default function Dashboard() {
-    const { api, user } = useUser();
+    const { api, user, } = useUser();
     const navigate = useNavigate();
     const [url, setUrl] = useState("");
     const [analyses, setAnalyses] = useState<AnalysisSummary[]>([]);

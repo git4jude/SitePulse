@@ -5,10 +5,10 @@ export default function HowItWorks() {
     return (
         <section className="relative max-w-5xl md:min-h-[80vh] mx-auto px-4 py-24 overflow-hidden">
             <div className="text-center mb-16 animate-slide-up">
-                <h2 className="text-3xl sm:text-4xl font-semibold mb-6 text-foreground">
+                <h2 className="text-4xl sm:text-5xl font-semibold mb-6 text-foreground">
                     How It <span className="gradient-text">Works</span>
                 </h2>
-                <p className="text-muted-foreground max-w-xl mx-auto">SitePulse uses advanced browser automation and AI to simulate a real user experience and provide deep SEO insights.</p>
+                <p className="text-lg text-muted-foreground max-w-xl mx-auto">SitePulse uses advanced browser automation and AI to simulate a real user experience and provide deep SEO insights.</p>
             </div>
 
             <div className="relative grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -20,8 +20,8 @@ export default function HowItWorks() {
                         <div className="bg-card border border-border rounded-2xl p-8 text-center h-full hover:bg-muted transition-all group/step">
                             <div className="text-5xl font-bold text-primary/10 mb-4 group-hover/step:text-primary/20 transition-colors">{step.num}</div>
                             <div className="size-14 rounded-xl flex items-center justify-center mx-auto mb-5 text-primary/80 border border-primary/20 bg-muted/40 group-hover/step:border-primary/40 transition-all">{step.icon}</div>
-                            <h3 className=" mb-2 text-foreground">{step.title}</h3>
-                            <p className="text-sm text-muted-foreground">{step.desc}</p>
+                            <h3 className="text-lg mb-2 text-foreground">{step.title}</h3>
+                            <p className="text-base text-muted-foreground">{step.desc}</p>
                         </div>
                     </div>
                 ))}

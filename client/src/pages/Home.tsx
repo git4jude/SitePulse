@@ -1,3 +1,4 @@
+import LandingNavbar from "../components/home/LandingNavbar";
 import Hero from "../components/home/Hero";
 import Features from "../components/home/Features";
 import HowItWorks from "../components/home/HowItWorks";
@@ -7,6 +8,7 @@ import Footer from "../components/home/Footer";
 export default function Home() {
     return (
         <div className="min-h-screen landing-purple-theme">
+            <LandingNavbar />
             <Hero />
             <Features />
             <HowItWorks />

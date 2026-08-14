@@ -18,7 +18,7 @@ export default function App() {
 
     const location = useLocation();
 
-    const hideNavbar = ["/login", "/register"].includes(location.pathname);
+    const hideNavbar = ["/", "/login", "/register"].includes(location.pathname);
 
     if(loading) return < Loading />
 

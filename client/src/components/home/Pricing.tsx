@@ -3,14 +3,14 @@ import { CheckCircle } from "lucide-react";
 
 export default function Pricing() {
     return (
-        <section className="relative md:min-h-screen flex flex-col justify-center items-center max-lg:py-24">
+        <section id="pricing" className="relative md:min-h-screen flex flex-col justify-center items-center max-lg:py-24">
             <div className="bg-dot-pattern absolute inset-0 -z-1 opacity-10"></div>
             <div className="max-w-5xl w-full mx-auto px-4 ">
                 <div className="text-center mb-14">
-                    <h2 className="text-3xl sm:text-4xl font-semibold mb-4 text-foreground">
+                    <h2 className="text-4xl sm:text-5xl font-semibold mb-4 text-foreground">
                         Simple <span className="gradient-text">Pricing</span>
                     </h2>
-                    <p className="text-muted-foreground">Start free. Upgrade when you need more.</p>
+                    <p className="text-lg text-muted-foreground">Start free. Upgrade when you need more.</p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
                     {/* Free */}

@@ -2,11 +2,14 @@ import express from 'express';
 import cors from 'cors';
 import "dotenv/config";
 import connectDB from './config/db.js';
-import authRouter from './routes/authRoute.js';
-import rankRouter from './routes/rankRoute.js';
+import authRouter from './routes/authRoutes.js';
+import rankRouter from './routes/rankRoutes.js';
+import analysisRouter from './routes/analysisRoutes.js';
+import { startRankTrackingCron } from './cron/rankTrackingCron.js';
+
+
 
 const app = express();
-
 connectDB();
 
 app.use(cors());
@@ -17,7 +20,10 @@ app.get('/', (req, res) => {
 });
 app.use('/api/auth', authRouter);
 app.use('/api/rank', rankRouter);
+app.use('/api/analysis', analysisRouter)
 
+//start cron jobs
+startRankTrackingCron()
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

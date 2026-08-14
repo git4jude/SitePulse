@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { SearchIcon, GlobeIcon, FileSearchIcon, BrainIcon, CheckCircleIcon, AlertCircle, Loader2, ArrowRightIcon } from "lucide-react";
+import { useUser } from "../context/UserContext";
 
 const STEPS = [
     { icon: <GlobeIcon size={22} />, label: "Connecting to browser", desc: "Creating cloud browser session..." },
@@ -12,6 +13,7 @@ const STEPS = [
 ];
 
 export default function Analyze() {
+    const{api} = useUser();
     const [url, setUrl] = useState("");
     const [analyzing, setAnalyzing] = useState(false);
     const [currentStep, setCurrentStep] = useState(0);
@@ -29,13 +31,57 @@ export default function Analyze() {
         setAnalyzing(true);
         setCurrentStep(0);
 
-        setTimeout(() => setCurrentStep(1), 1000);
-        setTimeout(() => setCurrentStep(2), 3000);
-        setTimeout(() => setCurrentStep(3), 6000);
-        setTimeout(() => {
-            setAnalyzing(false);
-            navigate(`/report/id123`);
-        }, 8000);
+      try {
+        //step0 : connecting
+        setCurrentStep(0);
+        const res = await api.post('/analysis/analyze', {
+            url: targetUrl.startsWith("http") ? targetUrl : `https://${targetUrl}`,
+        })
+        if(!res.data.success){
+            throw new Error(res.data.message)
+        }
+        const id = res.data.analysisId;
+
+        //step 1: scanning
+        setCurrentStep(1);
+
+        //poll for completion 
+        let attempts = 0;
+        const maxAttempts = 60;
+
+        pollRef.current = setInterval(async () => {
+            attempts++;
+            if(attempts > maxAttempts){
+                if(pollRef.current) clearInterval(pollRef.current)
+                    setError("Analysis is checking longer the expected check your history later");
+                setAnalyzing(false);
+                return
+            }
+            try {
+                const check = await api.get(`/analysis/${id}`)
+                const analysis = check.data.analysis;
+                
+                if(analysis.status === "completed"){
+                    if(pollRef.current) clearInterval(pollRef.current)
+                        setCurrentStep(3)
+                    setTimeout(() => navigate(`/report/${id}`), 1000)
+                }else if(analysis.status === "failed"){
+                    if(pollRef.current) clearInterval(pollRef.current)
+                        setError("Analysis Failed..the AI model might be down.")
+                    setAnalyzing(false)
+                }else{ 
+                    // still processing - advance visual steps
+                    if(attempts > 5) setCurrentStep(2)
+                    
+                }
+            } catch {
+                //Ignore polling errors
+            }
+        }, 2000)
+      } catch (err: any) {
+        setError(err.response?.data?.message || err.message || "Failed to start analysis")
+        setAnalyzing(false)
+      }
     };
 
     const handleSubmit = (e: React.SubmitEvent) => {

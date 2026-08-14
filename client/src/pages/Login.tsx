@@ -66,7 +66,7 @@ export default function Login({ state }: { state: string }) {
                         <div
                             className="rounded-2xl p-8 sm:p-10"
                             style={{
-                                background: "rgba(20,18,28,0.92)",
+                                background: "var(--signin-card-bg)",
                                 backdropFilter: "blur(20px)",
                                 WebkitBackdropFilter: "blur(20px)",
                                 border: "1px solid rgba(139,92,246,0.15)",

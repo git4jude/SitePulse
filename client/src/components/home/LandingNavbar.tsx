@@ -40,7 +40,7 @@ export default function LandingNavbar() {
                                     Log In
                                 </Link>
                                 <Link to="/register" className="px-4 py-2 rounded-full bg-primary text-sm font-semibold hover:opacity-90 transition-opacity" style={{ color: "var(--background)" }}>
-                                    Sign up
+                                    Get started
                                 </Link>
                             </>
                         )}

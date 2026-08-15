@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { CheckCircle } from "lucide-react";
+import TrueFocus from "../TrueFocus";
 
 export default function Pricing() {
     return (
@@ -7,8 +8,8 @@ export default function Pricing() {
             <div className="bg-dot-pattern absolute inset-0 -z-1 opacity-10"></div>
             <div className="max-w-5xl w-full mx-auto px-4 ">
                 <div className="text-center mb-14">
-                    <h2 className="text-4xl sm:text-5xl font-semibold mb-4 text-foreground">
-                        Simple <span className="gradient-text">Pricing</span>
+                    <h2 className="text-4xl sm:text-5xl font-semibold mb-4 text-foreground flex justify-center">
+                        <TrueFocus sentence="Simple Pricing" manualMode={false} blurAmount={5} borderColor="#9333EA" glowColor="rgba(147, 51, 234, 0.6)" animationDuration={0.5} pauseBetweenAnimations={1} />
                     </h2>
                     <p className="text-lg text-muted-foreground">Start free. Upgrade when you need more.</p>
                 </div>

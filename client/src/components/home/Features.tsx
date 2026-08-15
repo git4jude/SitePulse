@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { homeFeaturesData } from "../../assets/assets";
 import SpotlightCard from "../SpotlightCard";
+import TrueFocus from "../TrueFocus";
 
 const purpleShades = [
     { border: "#9333EA", spotlight: "rgba(147, 51, 234, 0.35)" },
@@ -15,7 +16,10 @@ export default function Features() {
             <div className="max-w-6xl mx-auto flex flex-col items-center justify-center px-4 ">
                 <div className="text-center mb-14">
                     <h2 className="text-4xl sm:text-5xl font-semibold mb-8 text-foreground">
-                        Everything You Need to <span className="gradient-text">Rank Higher</span>
+                        Everything You Need to{" "}
+                        <span className="inline-flex align-middle">
+                            <TrueFocus sentence="Rank Higher" manualMode={false} blurAmount={5} borderColor="#9333EA" glowColor="rgba(147, 51, 234, 0.6)" animationDuration={0.5} pauseBetweenAnimations={1} />
+                        </span>
                     </h2>
                     <p className="text-lg text-muted-foreground max-w-lg mx-auto">Comprehensive SEO analysis powered by real browser rendering and artificial intelligence.</p>
                 </div>

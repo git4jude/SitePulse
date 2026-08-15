@@ -7,12 +7,14 @@ import {
   refreshKeyword,
   deleteKeyword,
   toggleKeyword,
+  getCronStatus,
 } from "../controllers/rankController.js";
 
 const rankRouter = express.Router();
 
 rankRouter.post("/add", auth, addKeyword);
 rankRouter.get("/list", auth, getKeywords);
+rankRouter.get("/cron-status", auth, getCronStatus);
 rankRouter.get("/:id", auth, getKeyword);
 rankRouter.post("/:id/refresh", auth, refreshKeyword);
 rankRouter.patch("/:id/toggle", auth, toggleKeyword);

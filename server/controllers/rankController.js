@@ -1,7 +1,8 @@
 import KeywordTracking from "../models/keywordTracking.js";
+import CronRun from "../models/CronRun.js";
 import { keywordTracking } from "../services/keywordTrackingService.js";
 
-// Add a keyword to track 
+// Add a keyword to track
 export const addKeyword = async (req, res) => {
   try {
     const {keyword,url} = req.body
@@ -14,13 +15,13 @@ export const addKeyword = async (req, res) => {
     let domain;
     try {
       const urlObj = new URL(url.startsWith("http")? url : `https://${url}`);
-      domain = urlObj.hostname.replace("www.","")   
+      domain = urlObj.hostname.replace("www.","")
     } catch (error) {
       return res.status(400).json({success: false, message: "Invalid URL"})
     }
 
     //Check if already tracking this keyword+domain
-    const existing = await KeywordTracking.findOne({userId: req.userId, keyword: keyword.toLowerCase().trim(), domain}) 
+    const existing = await KeywordTracking.findOne({userId: req.userId, keyword: keyword.toLowerCase().trim(), domain})
 
     if(existing){
       return res.status(400).json({success: false, message: "Already tracking this keyword for this domain"})
@@ -37,9 +38,6 @@ export const addKeyword = async (req, res) => {
 
     res.status(201).json({success: true, message: "Keyword tracking started", tracking})
     keywordTracking(tracking)
-
-    
-    
   } catch (error) {
     console.error("Add keyword error:", error.message)
     if(error.code === 11000){res.status(400).json({success:false, message:"Already tracking this keyword"})}
@@ -108,6 +106,17 @@ export const deleteKeyword = async (req, res) => {
     res.json({ success: true, message: "Keyword deleted" })
   } catch (error) {
     console.error("Delete keyword error:", error.message)
+    res.status(500).json({ success: false, message: "Server error" })
+  }
+}
+
+// Get the most recent daily rank-tracking cron run
+export const getCronStatus = async (req, res) => {
+  try {
+    const run = await CronRun.findOne({ job: "rank-tracking" }).sort({ startedAt: -1 })
+    res.json({ success: true, run: run || null })
+  } catch (error) {
+    console.error("Get cron status error:", error.message)
     res.status(500).json({ success: false, message: "Server error" })
   }
 }

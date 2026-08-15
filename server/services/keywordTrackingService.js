@@ -11,7 +11,12 @@ export async function keywordTracking(tracking){
       if(attempt < 2) await new Promise((r) => setTimeout(r, result.success ? 3000 : 5000))
     }
 
-    if(result.success){
+    // A "successful" scrape that extracted zero results almost always means Google
+    // blocked/CAPTCHA'd the session, not that the keyword genuinely has no results -
+    // treat it as a failed check rather than overwriting the tracking with a false "not ranked".
+    const scrapedOk = result.success && result.data.totalResultsScanned > 0;
+
+    if(scrapedOk){
       const prev = tracking.currentPosition;
       const today = new Date();
       today.setHours(0,0,0,0);

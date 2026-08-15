@@ -69,7 +69,6 @@ export async function rankTracker(keyword, targetDomain) {
 
                 const title = h3.textContent.trim();
 
-            
                 let snippet = "";
                 let container = h3;
                 for (let i = 0; i < 6 && container.parentElement; i++) {

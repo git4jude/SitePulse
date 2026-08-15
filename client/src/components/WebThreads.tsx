@@ -306,7 +306,8 @@ const WebThreads: React.FC<WebThreadsProps> = ({
     const io = new IntersectionObserver(
       ([entry]) => {
         isVisible = entry.isIntersecting;
-        isVisible ? tryStart() : tryStop();
+        if (isVisible) tryStart();
+        else tryStop();
       },
       { threshold: 0 }
     );
@@ -314,7 +315,8 @@ const WebThreads: React.FC<WebThreadsProps> = ({
 
     const onVisibility = () => {
       isPageVisible = !document.hidden;
-      isPageVisible ? tryStart() : tryStop();
+      if (isPageVisible) tryStart();
+      else tryStop();
     };
     document.addEventListener('visibilitychange', onVisibility);
 
@@ -331,7 +333,9 @@ const WebThreads: React.FC<WebThreadsProps> = ({
       ctxMap.delete(container);
       try {
         container.removeChild(canvas);
-      } catch {}
+      } catch {
+        // canvas already removed from the DOM - safe to ignore
+      }
       gl.getExtension('WEBGL_lose_context')?.loseContext();
     };
   }, []);

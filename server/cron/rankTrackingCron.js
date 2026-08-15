@@ -1,23 +1,61 @@
 import cron from "node-cron";
 import KeywordTracking from "../models/keywordTracking.js";
+import CronRun from "../models/CronRun.js";
 import { keywordTracking } from "../services/keywordTrackingService.js";
+
+const JOB_NAME = "rank-tracking";
 
 export function startRankTrackingCron() {
   cron.schedule("0 6 * * *", async () => {
     console.log("Starting daily rank tracking...")
+    const run = await CronRun.create({ job: JOB_NAME, status: "running", startedAt: new Date() }).catch(() => null)
+    let checked = 0
+    let failed = 0
+
     try {
       const activeTrackings = await KeywordTracking.find({active: true})
-      for( const tracking of activeTrackings){
-        tracking.status = "checking"
-        await tracking.save()
+      if (run) { run.totalKeywords = activeTrackings.length; await run.save().catch(() => {}) }
 
-        const result = await keywordTracking(tracking)
+      for (let i = 0; i < activeTrackings.length; i++) {
+        const tracking = activeTrackings[i]
 
-        //Delay between check to avoid rate limits
-        await new Promise((r) => setTimeout(r, 10000 + Math.random()*  5000) )
+        // Isolate each tracking's failure so one bad save/scrape doesn't abort
+        // the rest of the day's batch.
+        try {
+          tracking.status = "checking"
+          await tracking.save()
+
+          await keywordTracking(tracking)
+          if (tracking.status === "completed") checked++
+          else failed++
+        } catch (error) {
+          failed++
+          console.error(`[CRON] Failed to check "${tracking.keyword}" (${tracking._id}):`, error.message)
+        }
+
+        //Delay between checks to avoid rate limits
+        if (i < activeTrackings.length - 1) {
+          await new Promise((r) => setTimeout(r, 10000 + Math.random() * 5000))
+        }
+      }
+
+      if (run) {
+        run.status = "completed"
+        run.finishedAt = new Date()
+        run.checked = checked
+        run.failed = failed
+        await run.save().catch(() => {})
       }
     } catch (error) {
        console.error("[CRON] Rank tracking error:", error.message)
+       if (run) {
+         run.status = "failed"
+         run.finishedAt = new Date()
+         run.checked = checked
+         run.failed = failed
+         run.error = error.message
+         await run.save().catch(() => {})
+       }
     }
   })
 }

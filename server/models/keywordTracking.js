@@ -59,7 +59,7 @@ const keywordTrackingSchema = new mongoose.Schema({
   keyword: {
     type: String,
     required: true,
-    trim: true, 
+    trim: true,
     lowercase: true,
   },
   url: {

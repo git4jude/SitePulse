@@ -1,5 +1,6 @@
-@import url("https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@100..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@100..900&family=Space+Grotesk:wght@500..700&display=swap");
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
     /* Colors variables */
@@ -20,6 +21,9 @@
 
     --color-glass-bg: var(--glass-bg);
     --color-glass-border: var(--glass-border);
+
+    --color-purple-accent: var(--purple-accent);
+    --color-purple-soft: var(--purple-soft);
 }
 
 :root {
@@ -47,6 +51,20 @@
     --scroll-track: #f3f4f6;
     --scroll-thumb: #d1d5db;
     --scroll-thumb-hover: #9ca3af;
+
+    /* Purple accent pair: deepened in light mode for AA text contrast on white/off-white */
+    --purple-accent: #7c3aed;
+    --purple-soft: #9333ea;
+
+    /* Dashboard score-ring colors, tuned per mode so they don't wash out on light bg */
+    --ring-success: #047857;
+    --ring-warning: #b45309;
+    --ring-danger: #b91c1c;
+
+    /* Dashboard zone panels (section-separation) */
+    --zone-border: rgba(17, 24, 39, 0.08);
+    --zone-tint: linear-gradient(135deg, rgba(147, 51, 234, 0.06), rgba(167, 139, 250, 0.025) 55%, rgba(147, 51, 234, 0) 100%);
+    --zone-tint-border: rgba(147, 51, 234, 0.14);
 }
 
 .dark {
@@ -74,6 +92,20 @@
     --scroll-track: #09090b;
     --scroll-thumb: #27272a;
     --scroll-thumb-hover: #3f3f46;
+
+    /* Purple accent pair: lightened in dark mode so it pops against near-black */
+    --purple-accent: #c4b5fd;
+    --purple-soft: #a78bfa;
+
+    /* Dashboard score-ring colors, brightened for legibility on dark bg */
+    --ring-success: #34d399;
+    --ring-warning: #fbbf24;
+    --ring-danger: #f87171;
+
+    /* Dashboard zone panels (section-separation) */
+    --zone-border: rgba(255, 255, 255, 0.08);
+    --zone-tint: linear-gradient(135deg, rgba(147, 51, 234, 0.14), rgba(139, 92, 246, 0.05) 55%, rgba(147, 51, 234, 0) 100%);
+    --zone-tint-border: rgba(167, 139, 250, 0.2);
 }
 
 html {
@@ -96,6 +128,62 @@ button {
 
 .outfit {
     font-family: "Outfit", sans-serif;
+}
+
+.font-display {
+    font-family: "Space Grotesk", "Outfit", sans-serif;
+    letter-spacing: -0.02em;
+}
+
+/* Dashboard mesh background + noise texture */
+.dashboard-mesh-bg {
+    position: relative;
+    background:
+        radial-gradient(ellipse 70% 45% at 15% -5%, rgba(147, 51, 234, 0.1), transparent 60%),
+        radial-gradient(ellipse 55% 40% at 100% 5%, rgba(139, 92, 246, 0.08), transparent 60%),
+        radial-gradient(ellipse 50% 45% at 85% 100%, rgba(167, 139, 250, 0.06), transparent 60%),
+        #f8f9fb;
+}
+
+.dark .dashboard-mesh-bg {
+    background:
+        radial-gradient(ellipse 70% 45% at 15% -5%, rgba(147, 51, 234, 0.22), transparent 60%),
+        radial-gradient(ellipse 55% 40% at 100% 5%, rgba(139, 92, 246, 0.18), transparent 60%),
+        radial-gradient(ellipse 50% 45% at 85% 100%, rgba(167, 139, 250, 0.12), transparent 60%),
+        var(--background);
+}
+
+/* Dashboard section zones: one consistent shape/padding, alternating tint for separation */
+.dash-zone {
+    position: relative;
+    border-radius: 2rem;
+    border: 1px solid var(--zone-border);
+    padding: 1.75rem;
+}
+
+@media (min-width: 640px) {
+    .dash-zone {
+        padding: 2.5rem;
+    }
+}
+
+.dash-zone-tinted {
+    background: var(--zone-tint);
+    border-color: var(--zone-tint-border);
+}
+
+.dashboard-mesh-bg::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.35;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E");
+}
+
+.dark .dashboard-mesh-bg::before {
+    opacity: 0.5;
 }
 
 .glass {
@@ -123,7 +211,7 @@ button {
 
 /* gradients */
 .gradient-text {
-    background: linear-gradient(135deg, var(--primary), var(--accent));
+    background: linear-gradient(135deg, var(--purple-soft), var(--purple-accent));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;

@@ -28,7 +28,7 @@ export default function App() {
             {!hideNavbar && <Navbar />}
             <Routes>
                 <Route path="/" element={<Home />} />
-                
+
                 <Route path="/login" element={user ? <Navigate to="/dashboard" replace /> : <Login state="login" />} />
 
                 <Route path="/register" element={user ? <Navigate to="/dashboard" replace /> : <Login state="register" />} />

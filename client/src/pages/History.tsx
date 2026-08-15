@@ -1,6 +1,7 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Clock, Trash2, ExternalLink, Search, AlertCircle, Loader2, Filter, ArrowUpDown } from "lucide-react";
+import { Clock, Trash2, ExternalLink, Search, AlertCircle, Loader2, Filter, ArrowUpDown, ScanSearchIcon } from "lucide-react";
 import ScoreGauge from "../components/ScoreGauge";
 import { useUser } from "../context/UserContext";
 
@@ -17,6 +18,14 @@ interface AnalysisItem {
         bestPractices: number;
     };
 }
+
+const ACCENT_BAR = { background: "linear-gradient(90deg, #9333EA, #C084FC)" };
+
+const scoreColor = (s: number) => {
+    if (s >= 80) return "var(--ring-success)";
+    if (s >= 50) return "var(--ring-warning)";
+    return "var(--ring-danger)";
+};
 
 export default function History() {
     const { api } = useUser();
@@ -56,12 +65,6 @@ export default function History() {
         setDeleting(null);
     };
 
-    const getScoreClass = (s: number) => {
-        if (s >= 80) return "score-good";
-        if (s >= 50) return "score-medium";
-        return "score-poor";
-    };
-
     let processedData = [...analyses];
 
     if (searchQuery) {
@@ -90,30 +93,39 @@ export default function History() {
     }, [page]);
 
     return (
-        <div className="min-h-screen pt-16 md:pt-24 bg-background">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+        <div className="dashboard-mesh-bg min-h-screen pt-16 md:pt-24 overflow-hidden">
+            <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-8">
                 {/* Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+                <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
                     <div>
-                        <h1 className="text-2xl sm:text-3xl font-medium text-foreground">
-                            Analysis <span className="gradient-text">History</span>
-                        </h1>
+                        <div className="h-[3px] w-10 rounded-full mb-3" style={ACCENT_BAR} />
+                        <div className="flex items-center gap-2 mb-1.5">
+                            <div className="w-6 h-6 rounded-md bg-purple-accent/10 flex items-center justify-center text-purple-accent shrink-0">
+                                <ScanSearchIcon size={13} />
+                            </div>
+                            <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-purple-accent">Website Audits</p>
+                        </div>
+                        <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground">Analysis History</h1>
                         <p className="text-muted-foreground text-sm mt-1">View and manage all your past SEO analyses.</p>
                     </div>
-                    <Link to="/analyze" className="bg-primary px-5 py-2.5 rounded-xl text-sm font-semibold text-primary-foreground hover:opacity-90 transition-opacity self-start" style={{ color: "var(--background)" }}>
+                    <Link
+                        to="/analyze"
+                        className="bg-primary px-5 py-2.5 rounded-xl text-sm font-semibold text-primary-foreground self-start hover:opacity-90 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                        style={{ color: "var(--background)" }}
+                    >
                         New Analysis
                     </Link>
                 </div>
 
                 {/* Filters Row */}
-                <div className="mb-6 flex flex-col md:flex-row gap-3" style={{ animationDelay: "100ms" }}>
-                    <div className="glass rounded-xl px-4 py-2.5 flex items-center gap-2 flex-1">
+                <div className="mb-6 flex flex-col md:flex-row gap-3">
+                    <div className="rounded-xl border border-border/50 bg-muted/10 px-4 py-2.5 flex items-center gap-2 flex-1 transition-colors focus-within:border-purple-accent/40">
                         <Search size={18} className="text-muted-foreground" />
                         <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search by URL..." className="bg-transparent text-sm text-foreground placeholder-muted-foreground outline-none flex-1" id="history-search-input" />
                     </div>
 
                     <div className="flex gap-3">
-                        <div className="glass rounded-xl px-4 py-2.5 flex items-center gap-2">
+                        <div className="rounded-xl border border-border/50 bg-muted/10 px-4 py-2.5 flex items-center gap-2">
                             <Filter size={16} className="text-muted-foreground" />
                             <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="bg-transparent text-sm text-foreground outline-none appearance-none pr-4 cursor-pointer">
                                 <option value="all" className="bg-background">
@@ -130,7 +142,7 @@ export default function History() {
                                 </option>
                             </select>
                         </div>
-                        <div className="glass rounded-xl px-4 py-2.5 flex items-center gap-2">
+                        <div className="rounded-xl border border-border/50 bg-muted/10 px-4 py-2.5 flex items-center gap-2">
                             <ArrowUpDown size={16} className="text-muted-foreground" />
                             <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="bg-transparent text-sm text-foreground outline-none appearance-none pr-4 cursor-pointer">
                                 <option value="newest" className="bg-background">
@@ -156,33 +168,35 @@ export default function History() {
                         <div className="size-7 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                     </div>
                 ) : processedData.length === 0 ? (
-                    <div className="glass rounded-2xl p-12 text-center">
+                    <div className="rounded-3xl border border-border/60 bg-card/50 backdrop-blur-sm p-12 text-center">
                         <Search size={48} className="mx-auto text-muted-foreground mb-4 opacity-50" />
                         <h3 className="text-lg font-semibold text-foreground mb-2">{searchQuery ? "No matching analyses" : "No analyses yet"}</h3>
                         <p className="text-sm text-muted-foreground">{searchQuery ? "Try a different search term." : "Run your first SEO analysis to see it here."}</p>
                     </div>
                 ) : (
-                    <div className="space-y-3" style={{ animationDelay: "200ms" }}>
+                    <div className="space-y-3">
                         {processedData.map((a) => (
-                            <div key={a._id} className="glass rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4 hover:bg-muted/50 transition-all group">
+                            <div key={a._id} className="group relative rounded-2xl border border-border/50 bg-card/40 backdrop-blur-sm p-4 sm:p-5 overflow-hidden flex flex-col sm:flex-row items-start sm:items-center gap-4 transition-all duration-300 hover:border-purple-accent/30 hover:-translate-y-0.5 hover:shadow-[0_10px_35px_rgba(147,51,234,0.12)]">
+                                <div className="pointer-events-none absolute -right-10 -top-10 w-32 h-32 rounded-full bg-purple-accent/10 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
                                 {/* Score */}
-                                <div className="shrink-0">
+                                <div className="relative shrink-0">
                                     {a.status === "completed" ? (
                                         <ScoreGauge score={a.overallScore} size={52} strokeWidth={4} />
                                     ) : a.status === "processing" ? (
-                                        <div className="w-[52px] h-[52px] rounded-full glass flex items-center justify-center">
-                                            <Loader2 size={20} className="text-primary animate-spin" />
+                                        <div className="w-[52px] h-[52px] rounded-full border border-border/50 bg-muted/20 flex items-center justify-center">
+                                            <Loader2 size={20} className="text-purple-accent animate-spin" />
                                         </div>
                                     ) : (
-                                        <div className="w-[52px] h-[52px] rounded-full glass flex items-center justify-center">
+                                        <div className="w-[52px] h-[52px] rounded-full border border-border/50 bg-muted/20 flex items-center justify-center">
                                             <AlertCircle size={20} className="text-danger" />
                                         </div>
                                     )}
                                 </div>
 
                                 {/* URL + Meta */}
-                                <div className="flex-1 min-w-0">
-                                    <Link to={`/report/${a._id}`} className="text-sm font-medium text-foreground hover:text-primary transition-colors truncate block">
+                                <div className="relative flex-1 min-w-0">
+                                    <Link to={`/report/${a._id}`} className="text-sm font-medium text-foreground hover:text-purple-accent transition-colors truncate block">
                                         {(() => {
                                             try {
                                                 return new URL(a.url).hostname;
@@ -197,13 +211,13 @@ export default function History() {
                                             <Clock size={12} />
                                             {new Date(a.createdAt).toLocaleDateString()}
                                         </span>
-                                        <span className={`text-xs px-2 py-0.5 rounded-full ${a.status === "completed" ? "bg-success/10 text-success" : a.status === "processing" ? "bg-primary/10 text-primary" : "bg-danger/10 text-danger"}`}>{a.status}</span>
+                                        <span className={`text-xs px-2 py-0.5 rounded-full ${a.status === "completed" ? "bg-success/10 text-success" : a.status === "processing" ? "bg-purple-accent/10 text-purple-accent" : "bg-danger/10 text-danger"}`}>{a.status}</span>
                                     </div>
                                 </div>
 
                                 {/* Category scores */}
                                 {a.status === "completed" && (
-                                    <div className="hidden lg:grid grid-cols-4 gap-4">
+                                    <div className="relative hidden lg:grid grid-cols-4 gap-4">
                                         {[
                                             { label: "SEO", value: a.categories.seo },
                                             { label: "Perf", value: a.categories.performance },
@@ -211,7 +225,9 @@ export default function History() {
                                             { label: "BP", value: a.categories.bestPractices },
                                         ].map((c) => (
                                             <div key={c.label} className="text-center w-12">
-                                                <p className={`text-sm font-bold ${getScoreClass(c.value)}`}>{c.value}</p>
+                                                <p className="text-sm font-bold" style={{ color: scoreColor(c.value) }}>
+                                                    {c.value}
+                                                </p>
                                                 <p className="text-[10px] text-muted-foreground">{c.label}</p>
                                             </div>
                                         ))}
@@ -219,8 +235,8 @@ export default function History() {
                                 )}
 
                                 {/* Actions */}
-                                <div className="flex items-center gap-2 shrink-0">
-                                    <Link to={`/report/${a._id}`} className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-primary transition-all" title="View Report">
+                                <div className="relative flex items-center gap-2 shrink-0">
+                                    <Link to={`/report/${a._id}`} className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-purple-accent transition-all" title="View Report">
                                         <ExternalLink size={16} />
                                     </Link>
                                     <button onClick={() => handleDelete(a._id)} disabled={deleting === a._id} className="p-2 rounded-lg hover:bg-danger/10 text-muted-foreground hover:text-danger transition-all disabled:opacity-50" title="Delete">
@@ -235,13 +251,13 @@ export default function History() {
                 {/* Pagination */}
                 {totalPages > 1 && (
                     <div className="flex items-center justify-center gap-2 mt-8">
-                        <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="px-4 py-2 rounded-xl glass text-sm text-foreground disabled:opacity-30 hover:bg-muted/50 transition-all">
+                        <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="px-4 py-2 rounded-xl border border-border/50 bg-muted/10 text-sm text-foreground disabled:opacity-30 hover:bg-muted/30 transition-all">
                             Previous
                         </button>
                         <span className="px-4 py-2 text-sm text-muted-foreground">
                             Page {page} of {totalPages}
                         </span>
-                        <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="px-4 py-2 rounded-xl glass text-sm text-foreground disabled:opacity-30 hover:bg-muted/50 transition-all">
+                        <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="px-4 py-2 rounded-xl border border-border/50 bg-muted/10 text-sm text-foreground disabled:opacity-30 hover:bg-muted/30 transition-all">
                             Next
                         </button>
                     </div>

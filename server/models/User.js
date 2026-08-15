@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const userSchema = new mongoose.Schema({  
+const userSchema = new mongoose.Schema({
   name : {
     type: String,
     required: true,
@@ -17,7 +17,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     trim: true
-  }, 
+  },
   plan : {
     type: String,
     enum: ['free', 'standard', 'premium'],

@@ -20,7 +20,7 @@ const analysisSchema = new mongoose.Schema({
     seo: {type: Number, default: 0},
     performance: {type: Number, default: 0},
     accessibility: {type: Number, default: 0},
-    bestPractices: {type: Number, default: 0} 
+    bestPractices: {type: Number, default: 0}
   },
 
   metaData: {

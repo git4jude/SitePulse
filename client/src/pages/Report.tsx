@@ -1,8 +1,9 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import ScoreGauge from "../components/ScoreGauge";
 import IssueCard from "../components/IssueCard";
-import { ArrowLeft, Globe, Clock, FileText, Image, Link2, Heading, Tag, AlertCircle, ExternalLink, Type, Search } from "lucide-react";
+import { ArrowLeft, Globe, Clock, FileText, Image, Link2, Heading, Tag, AlertCircle, ExternalLink, Type, Search, HardDrive, AlignLeft } from "lucide-react";
 import { useUser } from "../context/UserContext";
 
 interface AnalysisData {
@@ -55,44 +56,87 @@ interface AnalysisData {
     issues: { severity: string; category: string; message: string; recommendation: string }[];
 }
 
+const scoreColor = (s: number) => {
+    if (s >= 80) return "var(--ring-success)";
+    if (s >= 50) return "var(--ring-warning)";
+    return "var(--ring-danger)";
+};
+
+const HEADING_TAGS = ["h1", "h2", "h3", "h4", "h5", "h6"] as const;
+const HEADING_ALPHAS = [1, 0.85, 0.7, 0.55, 0.42, 0.3];
+
+function CategoryStat({ icon, label, value }: { icon: React.ReactNode; label: string; value: number }) {
+    const color = scoreColor(value);
+    return (
+        <div className="flex flex-1 flex-col items-center sm:items-start gap-1.5 px-4 first:pl-0 last:pr-0">
+            <div className="flex items-center gap-1.5 text-muted-foreground">
+                {icon}
+                <span className="text-[10px] font-semibold uppercase tracking-wider">{label}</span>
+            </div>
+            <span className="font-display text-3xl sm:text-4xl font-bold leading-none" style={{ color }}>
+                {value}
+            </span>
+            <div className="w-full h-[3px] rounded-full bg-muted/50 overflow-hidden mt-1">
+                <div className="h-full rounded-full transition-all duration-1000 ease-out" style={{ width: `${value}%`, background: color }} />
+            </div>
+        </div>
+    );
+}
+
+function MetricInline({ icon, value, label }: { icon: React.ReactNode; value: string; label: string }) {
+    return (
+        <div className="flex items-center gap-1.5 px-3 py-1.5">
+            {icon}
+            <span className="font-semibold text-foreground">{value}</span>
+            <span className="text-muted-foreground">{label}</span>
+        </div>
+    );
+}
+
+function StatInline({ icon, value, label, color }: { icon: React.ReactNode; value: number; label: string; color?: string }) {
+    return (
+        <div className="flex items-center gap-2">
+            <span className="text-muted-foreground">{icon}</span>
+            <span className="font-display text-lg font-bold" style={{ color: color || "var(--foreground)" }}>
+                {value}
+            </span>
+            <span className="text-xs text-muted-foreground">{label}</span>
+        </div>
+    );
+}
+
+const gradientBorder = {
+    border: "1px solid transparent",
+    backgroundImage: "var(--zone-tint), linear-gradient(var(--card), var(--card)), linear-gradient(135deg, rgba(147,51,234,0.45), rgba(167,139,250,0.1))",
+    backgroundOrigin: "padding-box, padding-box, border-box" as const,
+    backgroundClip: "padding-box, padding-box, border-box" as const,
+};
+
 export default function Report() {
-    const {api} = useUser();
+    const { api } = useUser();
     const { id } = useParams();
     const [analysis, setAnalysis] = useState<AnalysisData | null>(null);
     const [loading, setLoading] = useState(true);
-    const [error,setError] = useState("");
+    const [error, setError] = useState("");
     const [activeTab, setActiveTab] = useState("overview");
-   
 
     const fetchAnalysis = async () => {
         try {
-            const res  = await api.get(`/analysis/${id}`)
-            if(res.data.success){
-                if(res.data.analysis.status === "processing"){
+            const res = await api.get(`/analysis/${id}`);
+            if (res.data.success) {
+                if (res.data.analysis.status === "processing") {
                     //poll for completion
-                    setTimeout(fetchAnalysis, 2000)
-                    return 
+                    setTimeout(fetchAnalysis, 2000);
+                    return;
                 }
-                setAnalysis(res.data.analysis)
-            }else{
-                setError("Analysis not found")
+                setAnalysis(res.data.analysis);
+            } else {
+                setError("Analysis not found");
             }
-        } catch{
-            setError("Failed to load analysis")
+        } catch {
+            setError("Failed to load analysis");
         }
         setLoading(false);
-    };
-
-    const getScoreClass = (s: number) => {
-        if (s >= 80) return "score-good";
-        if (s >= 50) return "score-medium";
-        return "score-poor";
-    };
-
-    const getScoreBgClass = (s: number) => {
-        if (s >= 80) return "score-bg-good";
-        if (s >= 50) return "score-bg-medium";
-        return "score-bg-poor";
     };
 
     const tabs = [
@@ -150,6 +194,13 @@ export default function Report() {
     const criticalCount = analysis.issues.filter((i) => i.severity === "critical").length;
     const warningCount = analysis.issues.filter((i) => i.severity === "warning").length;
     const infoCount = analysis.issues.filter((i) => i.severity === "info").length;
+    const totalIssues = criticalCount + warningCount + infoCount || 1;
+
+    const maxHeadingCount = Math.max(...HEADING_TAGS.map((t) => analysis.headings[t]), 1);
+    const sortedKeywords = [...analysis.keywords].sort((a, b) => b.count - a.count);
+    const maxKeywordCount = Math.max(...sortedKeywords.map((k) => k.count), 1);
+
+    const heroColor = scoreColor(analysis.overallScore);
 
     return (
         <div className="min-h-screen pt-16 md:pt-24 bg-background">
@@ -176,97 +227,89 @@ export default function Report() {
                     </div>
                 </div>
 
-                {/* Score Hero */}
-                <div className="bg-card border border-border rounded-2xl p-6 sm:p-8 mb-6" style={{ animationDelay: "100ms" }}>
-                    <div className="flex flex-col md:flex-row items-center gap-8">
-                        {/* Overall Score */}
-                        <ScoreGauge score={analysis.overallScore} size={160} strokeWidth={12} label="Overall Score" />
+                {/* Score Hero — primary section: glow + gradient border */}
+                <div className="relative rounded-[2rem] p-6 sm:p-10 mb-8 overflow-hidden" style={gradientBorder}>
+                    <div className="pointer-events-none absolute -top-24 -left-16 w-72 h-72 rounded-full blur-3xl opacity-20" style={{ background: heroColor }} />
 
-                        {/* Category Scores */}
+                    <div className="relative flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-12">
+                        <ScoreGauge score={analysis.overallScore} size={180} strokeWidth={14} label="Overall Score" glow />
+
                         <div className="flex-1 w-full">
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                                {[
-                                    { label: "SEO", value: analysis.categories.seo, icon: <Search size={18} /> },
-                                    { label: "Performance", value: analysis.categories.performance, icon: <Clock size={18} /> },
-                                    { label: "Accessibility", value: analysis.categories.accessibility, icon: <Globe size={18} /> },
-                                    { label: "Best Practices", value: analysis.categories.bestPractices, icon: <Tag size={18} /> },
-                                ].map((cat) => (
-                                    <div key={cat.label} className={`rounded-xl p-4 border text-center ${getScoreBgClass(cat.value)}`}>
-                                        <div className="flex items-center justify-center gap-1.5 mb-2 text-muted-foreground/80">
-                                            {cat.icon}
-                                            <span className="text-xs font-medium">{cat.label}</span>
-                                        </div>
-                                        <p className={`text-2xl font-bold ${getScoreClass(cat.value)}`}>{cat.value}</p>
-                                    </div>
-                                ))}
+                            {/* Category stat strip */}
+                            <div className="flex flex-wrap sm:flex-nowrap items-stretch justify-between gap-y-6 divide-x divide-border/40 pb-6 mb-6 border-b border-border/40">
+                                <CategoryStat label="SEO" value={analysis.categories.seo} icon={<Search size={13} />} />
+                                <CategoryStat label="Performance" value={analysis.categories.performance} icon={<Clock size={13} />} />
+                                <CategoryStat label="Accessibility" value={analysis.categories.accessibility} icon={<Globe size={13} />} />
+                                <CategoryStat label="Best Practices" value={analysis.categories.bestPractices} icon={<Tag size={13} />} />
                             </div>
 
-                            {/* Quick Stats */}
-                            <div className="grid grid-cols-3 gap-3 mt-4">
-                                <div className="bg-muted/30 border border-border rounded-xl p-3 text-center">
-                                    <p className="text-lg font-bold text-primary">{analysis.loadTime}ms</p>
-                                    <p className="text-[10px] text-muted-foreground">Load Time</p>
-                                </div>
-                                <div className="bg-muted/30 border border-border rounded-xl p-3 text-center">
-                                    <p className="text-lg font-bold text-secondary">{Math.round(analysis.pageSize / 1024)}KB</p>
-                                    <p className="text-[10px] text-muted-foreground">Page Size</p>
-                                </div>
-                                <div className="bg-muted/30 border border-border rounded-xl p-3 text-center">
-                                    <p className="text-lg font-bold text-accent">{analysis.wordCount.toLocaleString()}</p>
-                                    <p className="text-[10px] text-muted-foreground">Words</p>
-                                </div>
+                            {/* Secondary metrics — single thin stat bar */}
+                            <div className="flex flex-wrap items-center divide-x divide-border/50 rounded-full border border-border/50 bg-muted/20 text-xs w-fit">
+                                <MetricInline icon={<Clock size={12} className="text-muted-foreground" />} value={`${analysis.loadTime}ms`} label="Load Time" />
+                                <MetricInline icon={<HardDrive size={12} className="text-muted-foreground" />} value={`${Math.round(analysis.pageSize / 1024)}KB`} label="Page Size" />
+                                <MetricInline icon={<AlignLeft size={12} className="text-muted-foreground" />} value={analysis.wordCount.toLocaleString()} label="Words" />
                             </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Tabs */}
-                <div className="flex gap-1 mb-6 overflow-x-auto pb-1" style={{ animationDelay: "200ms" }}>
-                    {tabs.map((tab) => (
-                        <button
-                            key={tab.id}
-                            onClick={() => setActiveTab(tab.id)}
-                            className={`px-5 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${activeTab === tab.id ? "bg-primary text-primary-foreground" : "bg-card border border-border text-muted-foreground hover:text-foreground hover:bg-muted/50"}`}
-                            style={activeTab === tab.id ? { color: "var(--background)" } : {}}
-                        >
-                            {tab.label}
-                            {tab.id === "issues" && analysis.issues.length > 0 && <span className="ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] bg-danger/20 text-danger">{analysis.issues.length}</span>}
-                        </button>
-                    ))}
+                <div className="flex gap-1 mb-8 overflow-x-auto pb-1">
+                    {tabs.map((tab) => {
+                        const active = activeTab === tab.id;
+                        return (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id)}
+                                className={`relative px-5 py-2.5 rounded-full text-sm font-medium transition-all whitespace-nowrap ${active ? "text-white shadow-[0_8px_20px_rgba(147,51,234,0.35)]" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"}`}
+                                style={active ? { background: "linear-gradient(135deg, var(--purple-soft), var(--purple-accent))" } : undefined}
+                            >
+                                {tab.label}
+                                {tab.id === "issues" && analysis.issues.length > 0 && <span className={`ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] ${active ? "bg-white/20" : "bg-danger/20 text-danger"}`}>{analysis.issues.length}</span>}
+                            </button>
+                        );
+                    })}
                 </div>
 
                 {/* Tab Content */}
                 <div key={activeTab}>
                     {activeTab === "overview" && (
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            {/* Issues Summary */}
-                            <div className="bg-card border border-border rounded-2xl p-6">
-                                <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-                                    <AlertCircle size={20} className="text-danger" />
+                        <div className="space-y-8">
+                            {/* Issues Summary — primary section, full width */}
+                            <div className="rounded-[1.75rem] p-6 sm:p-8 dash-zone-tinted" style={{ border: "1px solid var(--zone-tint-border)" }}>
+                                <h3 className="text-lg font-semibold text-foreground mb-5 flex items-center gap-2">
+                                    <AlertCircle size={20} style={{ color: "var(--ring-danger)" }} />
                                     Issues Summary
                                 </h3>
-                                <div className="grid grid-cols-3 gap-3">
-                                    <div className="severity-critical rounded-xl p-4 text-center">
-                                        <p className="text-2xl font-bold">{criticalCount}</p>
-                                        <p className="text-xs mt-1">Critical</p>
-                                    </div>
-                                    <div className="severity-warning rounded-xl p-4 text-center">
-                                        <p className="text-2xl font-bold">{warningCount}</p>
-                                        <p className="text-xs mt-1">Warnings</p>
-                                    </div>
-                                    <div className="severity-info rounded-xl p-4 text-center">
-                                        <p className="text-2xl font-bold">{infoCount}</p>
-                                        <p className="text-xs mt-1">Info</p>
-                                    </div>
+
+                                {/* Stacked severity bar */}
+                                <div className="flex h-3 w-full overflow-hidden rounded-full bg-muted/40">
+                                    {criticalCount > 0 && <div className="h-full transition-all duration-700" style={{ width: `${(criticalCount / totalIssues) * 100}%`, background: "var(--ring-danger)" }} />}
+                                    {warningCount > 0 && <div className="h-full transition-all duration-700" style={{ width: `${(warningCount / totalIssues) * 100}%`, background: "var(--ring-warning)" }} />}
+                                    {infoCount > 0 && <div className="h-full transition-all duration-700" style={{ width: `${(infoCount / totalIssues) * 100}%`, background: "var(--accent)" }} />}
+                                </div>
+                                <div className="flex items-center gap-5 mt-3 mb-5 text-xs flex-wrap">
+                                    <span className="flex items-center gap-1.5 text-muted-foreground">
+                                        <span className="w-2 h-2 rounded-full" style={{ background: "var(--ring-danger)" }} />
+                                        <span className="font-semibold text-foreground">{criticalCount}</span> Critical
+                                    </span>
+                                    <span className="flex items-center gap-1.5 text-muted-foreground">
+                                        <span className="w-2 h-2 rounded-full" style={{ background: "var(--ring-warning)" }} />
+                                        <span className="font-semibold text-foreground">{warningCount}</span> Warning
+                                    </span>
+                                    <span className="flex items-center gap-1.5 text-muted-foreground">
+                                        <span className="w-2 h-2 rounded-full" style={{ background: "var(--accent)" }} />
+                                        <span className="font-semibold text-foreground">{infoCount}</span> Info
+                                    </span>
                                 </div>
 
                                 {analysis.issues.length > 0 && (
-                                    <div className="mt-4 space-y-2">
+                                    <div className="divide-y divide-border/30">
                                         {analysis.issues.slice(0, 3).map((issue, i) => (
                                             <IssueCard key={i} issue={issue} />
                                         ))}
                                         {analysis.issues.length > 3 && (
-                                            <button onClick={() => setActiveTab("issues")} className="w-full text-center text-sm text-primary hover:underline py-2">
+                                            <button onClick={() => setActiveTab("issues")} className="w-full text-center text-sm text-primary hover:underline py-3">
                                                 View all {analysis.issues.length} issues →
                                             </button>
                                         )}
@@ -274,107 +317,84 @@ export default function Report() {
                                 )}
                             </div>
 
-                            {/* Links & Images */}
-                            <div className="space-y-6">
-                                <div className="bg-card border border-border rounded-2xl p-6">
-                                    <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-                                        <Link2 size={20} className="text-primary" />
-                                        Links Analysis
+                            {/* Headings + Keywords — secondary charts */}
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                                <div className="rounded-xl border border-border/40 bg-muted/10 p-5 sm:p-6">
+                                    <h3 className="text-sm font-semibold text-muted-foreground mb-5 flex items-center gap-2 uppercase tracking-wide">
+                                        <Heading size={14} />
+                                        Heading Structure
                                     </h3>
-                                    <div className="grid grid-cols-3 gap-3">
-                                        <div className="glass rounded-xl p-4 text-center">
-                                            <p className="text-2xl font-bold text-primary">{analysis.links.internal}</p>
-                                            <p className="text-xs text-gray-500">Internal</p>
-                                        </div>
-                                        <div className="glass rounded-xl p-4 text-center">
-                                            <p className="text-2xl font-bold text-secondary">{analysis.links.external}</p>
-                                            <p className="text-xs text-gray-500">External</p>
-                                        </div>
-                                        <div className="glass rounded-xl p-4 text-center">
-                                            <p className="text-2xl font-bold text-accent">{analysis.links.total}</p>
-                                            <p className="text-xs text-gray-500">Total</p>
-                                        </div>
+                                    <div className="space-y-3">
+                                        {HEADING_TAGS.map((tag, i) => {
+                                            const count = analysis.headings[tag];
+                                            const pct = (count / maxHeadingCount) * 100;
+                                            return (
+                                                <div key={tag} className="flex items-center gap-3">
+                                                    <span className="text-xs font-mono text-muted-foreground w-6 uppercase">{tag}</span>
+                                                    <div className="relative flex-1 h-6">
+                                                        <div className="absolute inset-0 rounded-md bg-muted/40" />
+                                                        <div className="absolute inset-y-0 left-0 rounded-md transition-all duration-700" style={{ width: `${pct}%`, background: `rgba(147,51,234,${HEADING_ALPHAS[i]})` }} />
+                                                        <span className={`absolute inset-y-0 flex items-center text-xs font-bold ${tag === "h1" && count !== 1 ? "text-danger" : "text-foreground"}`} style={{ left: `calc(${pct}% + 8px)` }}>
+                                                            {count}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
                                     </div>
+                                    {analysis.headings.h1Texts.length > 0 && (
+                                        <div className="mt-5 pt-4 border-t border-border/30">
+                                            <p className="text-xs text-muted-foreground mb-1">H1 Text:</p>
+                                            {analysis.headings.h1Texts.map((text, i) => (
+                                                <p key={i} className="text-sm text-foreground/80 truncate">
+                                                    {text}
+                                                </p>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
 
-                                <div className="bg-card border border-border rounded-2xl p-6">
-                                    <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-                                        <Image size={20} className="text-accent" />
-                                        Images Audit
+                                <div className="rounded-xl border border-border/40 bg-muted/10 p-5 sm:p-6">
+                                    <h3 className="text-sm font-semibold text-muted-foreground mb-5 flex items-center gap-2 uppercase tracking-wide">
+                                        <Type size={14} />
+                                        Top Keywords
                                     </h3>
-                                    <div className="grid grid-cols-3 gap-3">
-                                        <div className="glass rounded-xl p-4 text-center">
-                                            <p className="text-2xl font-bold">{analysis.images.total}</p>
-                                            <p className="text-xs text-gray-500">Total</p>
+                                    {sortedKeywords.length > 0 ? (
+                                        <div className="space-y-0.5">
+                                            {sortedKeywords.map((kw, i) => (
+                                                <div key={kw.word} className="group flex items-center gap-3 rounded-lg px-2 py-1.5 -mx-2 transition-colors hover:bg-muted/40">
+                                                    <span className="text-xs font-mono text-muted-foreground w-4 text-right shrink-0">{i + 1}</span>
+                                                    <span className="text-sm font-medium text-foreground w-24 sm:w-28 truncate shrink-0">{kw.word}</span>
+                                                    <div className="flex-1 h-2.5 rounded-full bg-muted/40 overflow-hidden">
+                                                        <div className="h-full rounded-full transition-all duration-700" style={{ width: `${(kw.count / maxKeywordCount) * 100}%`, background: "linear-gradient(90deg, var(--purple-soft), var(--purple-accent))" }} />
+                                                    </div>
+                                                    <span className="text-[11px] text-muted-foreground w-16 text-right shrink-0 font-mono">
+                                                        {kw.count}× · {kw.density}%
+                                                    </span>
+                                                </div>
+                                            ))}
                                         </div>
-                                        <div className="glass rounded-xl p-4 text-center">
-                                            <p className="text-2xl font-bold text-success">{analysis.images.withAlt}</p>
-                                            <p className="text-xs text-gray-500">With Alt</p>
-                                        </div>
-                                        <div className="glass rounded-xl p-4 text-center">
-                                            <p className={`text-2xl font-bold ${analysis.images.missingAlt > 0 ? "text-danger" : "text-success"}`}>{analysis.images.missingAlt}</p>
-                                            <p className="text-xs text-gray-500">Missing Alt</p>
-                                        </div>
-                                    </div>
+                                    ) : (
+                                        <p className="text-sm text-muted-foreground">No keyword data available.</p>
+                                    )}
                                 </div>
                             </div>
 
-                            {/* Headings */}
-                            <div className="bg-card border border-border rounded-2xl p-6">
-                                <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-                                    <Heading size={20} className="text-secondary" />
-                                    Heading Structure
-                                </h3>
-                                <div className="space-y-2">
-                                    {["h1", "h2", "h3", "h4", "h5", "h6"].map((tag) => {
-                                        const count = analysis.headings[tag as keyof typeof analysis.headings] as number;
-                                        const maxBar = Math.max(analysis.headings.h1, analysis.headings.h2, analysis.headings.h3, analysis.headings.h4, analysis.headings.h5, analysis.headings.h6, 1);
-                                        return (
-                                            <div key={tag} className="flex items-center gap-3">
-                                                <span className="text-xs font-mono text-gray-400 w-6 uppercase">{tag}</span>
-                                                <div className="flex-1 h-6 rounded-lg bg-white/5 overflow-hidden">
-                                                    <div className="h-full rounded-lg gradient-bg transition-all" style={{ width: `${(count / maxBar) * 100}%`, minWidth: count > 0 ? "20px" : "0" }} />
-                                                </div>
-                                                <span className={`text-sm font-bold w-6 text-right ${tag === "h1" && count !== 1 ? "text-danger" : ""}`}>{count}</span>
-                                            </div>
-                                        );
-                                    })}
+                            {/* Links & Images — most demoted, single quiet stat-row */}
+                            <div className="rounded-xl border border-border/30 bg-muted/5 px-5 sm:px-6 py-4">
+                                <div className="flex flex-wrap items-center gap-x-8 gap-y-3">
+                                    <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground flex items-center gap-1.5 shrink-0">
+                                        <Link2 size={13} />
+                                        Links & Images
+                                    </span>
+                                    <StatInline icon={<Link2 size={13} />} value={analysis.links.internal} label="Internal" />
+                                    <StatInline icon={<ExternalLink size={13} />} value={analysis.links.external} label="External" />
+                                    <StatInline icon={<Link2 size={13} />} value={analysis.links.total} label="Total Links" />
+                                    <div className="w-px h-6 bg-border/50 hidden sm:block" />
+                                    <StatInline icon={<Image size={13} />} value={analysis.images.total} label="Images" />
+                                    <StatInline icon={<Image size={13} />} value={analysis.images.withAlt} label="With Alt" color="var(--ring-success)" />
+                                    <StatInline icon={<AlertCircle size={13} />} value={analysis.images.missingAlt} label="Missing Alt" color={analysis.images.missingAlt > 0 ? "var(--ring-danger)" : "var(--ring-success)"} />
                                 </div>
-                                {analysis.headings.h1Texts.length > 0 && (
-                                    <div className="mt-4 p-3 rounded-xl bg-white/3 border border-white/5">
-                                        <p className="text-xs text-gray-500 mb-1">H1 Text:</p>
-                                        {analysis.headings.h1Texts.map((text, i) => (
-                                            <p key={i} className="text-sm text-gray-300 truncate">
-                                                {text}
-                                            </p>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Keywords */}
-                            <div className="bg-card border border-border rounded-2xl p-6">
-                                <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-                                    <Type size={20} className="text-warning" />
-                                    Top Keywords
-                                </h3>
-                                {analysis.keywords.length > 0 ? (
-                                    <div className="space-y-2">
-                                        {analysis.keywords.map((kw, i) => (
-                                            <div key={kw.word} className="flex items-center gap-3">
-                                                <span className="text-xs text-gray-500 w-4">{i + 1}</span>
-                                                <span className="flex-1 text-sm font-medium">{kw.word}</span>
-                                                <span className="text-xs text-gray-400">{kw.count}×</span>
-                                                <div className="w-16 h-1.5 rounded-full bg-white/5 overflow-hidden">
-                                                    <div className="h-full rounded-full bg-accent" style={{ width: `${Math.min(kw.density * 10, 100)}%` }} />
-                                                </div>
-                                                <span className="text-xs text-gray-500 w-12 text-right">{kw.density}%</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <p className="text-sm text-gray-500">No keyword data available.</p>
-                                )}
                             </div>
                         </div>
                     )}
@@ -449,8 +469,8 @@ export default function Report() {
                             <div className="bg-card border border-border rounded-2xl p-6">
                                 <h3 className="text-lg font-semibold text-foreground mb-4">Heading Hierarchy</h3>
                                 <div className="space-y-2">
-                                    {["h1", "h2", "h3", "h4", "h5", "h6"].map((tag, i) => {
-                                        const count = analysis.headings[tag as keyof typeof analysis.headings] as number;
+                                    {HEADING_TAGS.map((tag, i) => {
+                                        const count = analysis.headings[tag];
                                         return (
                                             <div key={tag} className="flex items-center gap-3 p-2.5 bg-muted/30 border border-border rounded-lg" style={{ paddingLeft: `${i * 12 + 12}px` }}>
                                                 <span className="text-xs font-mono font-bold text-primary uppercase">&lt;{tag}&gt;</span>
@@ -477,7 +497,7 @@ export default function Report() {
                                         <span className="severity-warning px-2.5 py-1 rounded-full text-xs font-semibold">{warningCount} Warnings</span>
                                         <span className="severity-info px-2.5 py-1 rounded-full text-xs font-semibold">{infoCount} Info</span>
                                     </div>
-                                    <div className="space-y-3">
+                                    <div className="rounded-xl border border-border/40 bg-muted/10 divide-y divide-border/30">
                                         {analysis.issues.map((issue, i) => (
                                             <IssueCard key={i} issue={issue} />
                                         ))}

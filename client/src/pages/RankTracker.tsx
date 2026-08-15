@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Target, Plus, RefreshCw, Trash2, TrendingUp, TrendingDown, Minus, ExternalLink, Clock, Loader2, X, Search, Globe, AlertCircle, Eye, EyeOff, Filter, ArrowUpDown } from "lucide-react";
@@ -18,6 +19,8 @@ interface KeywordItem {
     status: string;
     competitors: { position: number; url: string; domain: string; title: string; snippet: string }[];
 }
+
+const ACCENT_BAR = { background: "linear-gradient(90deg, #9333EA, #C084FC)" };
 
 export default function RankTracker() {
     const { api } = useUser();
@@ -56,7 +59,7 @@ export default function RankTracker() {
         try {
             const res = await api.post('/rank/add', {
                 keyword: newKeyword.trim(),
-                url: newUrl.trim(),    
+                url: newUrl.trim(),
             })
             if(res.data.success){
                 setKeywords((prev) => [res.data.tracking, ...prev] )
@@ -137,17 +140,17 @@ export default function RankTracker() {
     };
 
     const getPositionBadge = (pos: number | null) => {
-        if (pos === null) return { text: "Not Ranked", class: "text-muted-foreground bg-muted/50" };
-        if (pos <= 3) return { text: `#${pos}`, class: "text-emerald-400 bg-emerald-500/15 border border-emerald-500/30" };
-        if (pos <= 10) return { text: `#${pos}`, class: "text-primary bg-primary/15 border border-primary/30" };
-        if (pos <= 20) return { text: `#${pos}`, class: "text-accent bg-accent/15 border border-accent/30" };
-        return { text: `#${pos}`, class: "text-danger bg-danger/15 border border-danger/30" };
+        if (pos === null) return { text: "Not Ranked", color: "var(--muted-foreground)" };
+        if (pos <= 3) return { text: `#${pos}`, color: "var(--ring-success)" };
+        if (pos <= 10) return { text: `#${pos}`, color: "var(--purple-accent)" };
+        if (pos <= 20) return { text: `#${pos}`, color: "var(--accent)" };
+        return { text: `#${pos}`, color: "var(--ring-danger)" };
     };
 
     const getChangeIndicator = (change: number) => {
-        if (change > 0) return { icon: <TrendingUp size={14} />, text: `+${change}`, class: "text-emerald-500" };
-        if (change < 0) return { icon: <TrendingDown size={14} />, text: `${change}`, class: "text-danger" };
-        return { icon: <Minus size={14} />, text: "0", class: "text-muted-foreground" };
+        if (change > 0) return { icon: <TrendingUp size={14} />, text: `+${change}`, color: "var(--ring-success)" };
+        if (change < 0) return { icon: <TrendingDown size={14} />, text: `${change}`, color: "var(--ring-danger)" };
+        return { icon: <Minus size={14} />, text: "0", color: "var(--muted-foreground)" };
     };
 
     let processedData = [...keywords];
@@ -182,31 +185,41 @@ export default function RankTracker() {
     }, []);
 
     return (
-        <div className="min-h-scree pt-16 md:pt-24 bg-background">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+        <div className="dashboard-mesh-bg min-h-screen pt-16 md:pt-24 overflow-hidden">
+            <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-8">
                 {/* Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+                <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
                     <div>
-                        <h1 className="text-2xl sm:text-3xl font-medium text-foreground">
-                            <span className="gradient-text">Rank Tracker</span>
-                        </h1>
+                        <div className="h-[3px] w-10 rounded-full mb-3" style={ACCENT_BAR} />
+                        <div className="flex items-center gap-2 mb-1.5">
+                            <div className="w-6 h-6 rounded-md bg-purple-accent/10 flex items-center justify-center text-purple-accent shrink-0">
+                                <Target size={13} />
+                            </div>
+                            <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-purple-accent">Keyword Tracking</p>
+                        </div>
+                        <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground">Rank Tracker</h1>
                         <p className="text-muted-foreground text-sm mt-1">Track your keyword rankings on Google — updated daily.</p>
                     </div>
-                    <button onClick={() => setShowAddModal(true)} className="bg-primary px-5 py-2.5 rounded-xl text-sm font-semibold text-primary-foreground hover:opacity-90 transition-opacity flex items-center gap-2 self-start" id="add-keyword-btn" style={{ color: "var(--background)" }}>
+                    <button
+                        onClick={() => setShowAddModal(true)}
+                        className="bg-primary px-5 py-2.5 rounded-xl text-sm font-semibold text-primary-foreground flex items-center gap-2 self-start hover:opacity-90 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                        id="add-keyword-btn"
+                        style={{ color: "var(--background)" }}
+                    >
                         <Plus size={18} />
                         Track Keyword
                     </button>
                 </div>
 
                 {/* Filters Row */}
-                <div className="mb-6 flex flex-col md:flex-row gap-3" style={{ animationDelay: "100ms" }}>
-                    <div className="glass rounded-xl px-4 py-2.5 flex items-center gap-2 flex-1">
+                <div className="mb-6 flex flex-col md:flex-row gap-3">
+                    <div className="rounded-xl border border-border/50 bg-muted/10 px-4 py-2.5 flex items-center gap-2 flex-1 transition-colors focus-within:border-purple-accent/40">
                         <Search size={18} className="text-muted-foreground" />
                         <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search keywords or domains..." className="bg-transparent text-sm text-foreground placeholder-muted-foreground outline-none flex-1" id="rank-search-input" />
                     </div>
 
                     <div className="flex gap-3">
-                        <div className="glass rounded-xl px-4 py-2.5 flex items-center gap-2">
+                        <div className="rounded-xl border border-border/50 bg-muted/10 px-4 py-2.5 flex items-center gap-2">
                             <Filter size={16} className="text-muted-foreground" />
                             <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="bg-transparent text-sm text-foreground outline-none appearance-none pr-4 cursor-pointer">
                                 <option value="all" className="bg-background">
@@ -220,7 +233,7 @@ export default function RankTracker() {
                                 </option>
                             </select>
                         </div>
-                        <div className="glass rounded-xl px-4 py-2.5 flex items-center gap-2">
+                        <div className="rounded-xl border border-border/50 bg-muted/10 px-4 py-2.5 flex items-center gap-2">
                             <ArrowUpDown size={16} className="text-muted-foreground" />
                             <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="bg-transparent text-sm text-foreground outline-none appearance-none pr-4 cursor-pointer">
                                 <option value="newest" className="bg-background">
@@ -246,7 +259,7 @@ export default function RankTracker() {
                         <div className="size-7 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                     </div>
                 ) : processedData.length === 0 ? (
-                    <div className="glass rounded-2xl p-12 text-center">
+                    <div className="rounded-3xl border border-border/60 bg-card/50 backdrop-blur-sm p-12 text-center">
                         <Target size={48} className="mx-auto text-muted-foreground mb-4 opacity-50" />
                         <h3 className="text-lg font-semibold text-foreground mb-2">No keywords tracked yet</h3>
                         <p className="text-sm text-muted-foreground mb-6">Add your first keyword and URL to start tracking your Google rankings.</p>
@@ -255,26 +268,36 @@ export default function RankTracker() {
                         </button>
                     </div>
                 ) : (
-                    <div className="space-y-3" style={{ animationDelay: "200ms" }}>
+                    <div className="space-y-3">
                         {processedData.map((kw) => {
                             const posBadge = getPositionBadge(kw.currentPosition);
                             const change = getChangeIndicator(kw.positionChange);
 
                             return (
-                                <div key={kw._id} className={`glass rounded-xl p-5 hover:bg-muted/50 transition-all ${!kw.active ? "opacity-50" : ""}`}>
-                                    <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+                                <div
+                                    key={kw._id}
+                                    className={`group relative rounded-2xl border border-border/50 bg-card/40 backdrop-blur-sm p-5 overflow-hidden transition-all duration-300 hover:border-purple-accent/30 hover:-translate-y-0.5 hover:shadow-[0_10px_35px_rgba(147,51,234,0.12)] ${!kw.active ? "opacity-50" : ""}`}
+                                >
+                                    <div className="pointer-events-none absolute -right-10 -top-10 w-32 h-32 rounded-full bg-purple-accent/10 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+                                    <div className="relative flex flex-col lg:flex-row lg:items-center gap-4">
                                         {/* Rank badge */}
                                         <div className="flex items-center gap-4 lg:w-32 shrink-0">
                                             {kw.status === "checking" ? (
-                                                <div className="w-16 h-16 rounded-xl glass flex items-center justify-center">
-                                                    <Loader2 size={24} className="text-primary animate-spin" />
+                                                <div className="w-16 h-16 rounded-xl border border-border/50 bg-muted/20 flex items-center justify-center">
+                                                    <Loader2 size={24} className="text-purple-accent animate-spin" />
                                                 </div>
                                             ) : (
-                                                <div className={`w-16 h-16 rounded-xl flex items-center justify-center text-lg font-bold ${posBadge.class}`}>{kw.currentPosition ? `#${kw.currentPosition}` : "—"}</div>
+                                                <div
+                                                    className="w-16 h-16 rounded-xl flex items-center justify-center text-lg font-bold border"
+                                                    style={{ background: `color-mix(in srgb, ${posBadge.color} 14%, transparent)`, borderColor: `color-mix(in srgb, ${posBadge.color} 30%, transparent)`, color: posBadge.color }}
+                                                >
+                                                    {kw.currentPosition ? `#${kw.currentPosition}` : "—"}
+                                                </div>
                                             )}
                                             {kw.status === "completed" && kw.currentPosition && (
                                                 <div className="text-center mt-1">
-                                                    <div className={`flex items-center justify-center gap-1 text-sm font-medium ${change.class}`}>
+                                                    <div className="flex items-center justify-center gap-1 text-sm font-medium" style={{ color: change.color }}>
                                                         {change.icon}
                                                         {change.text}
                                                     </div>
@@ -284,7 +307,7 @@ export default function RankTracker() {
                                         </div>
 
                                         <div className="flex-1 min-w-0">
-                                            <Link to={`/rank/${kw._id}`} className="text-base font-semibold text-foreground hover:text-primary transition-colors block truncate">
+                                            <Link to={`/rank/${kw._id}`} className="text-base font-semibold text-foreground hover:text-purple-accent transition-colors block truncate">
                                                 "{kw.keyword}"
                                             </Link>
                                             <div className="flex items-center gap-2 mt-1">
@@ -304,7 +327,7 @@ export default function RankTracker() {
                                         {kw.status === "completed" && (
                                             <div className="hidden md:flex items-center gap-5">
                                                 <div className="text-center">
-                                                    <p className="text-sm font-bold text-primary">{kw.bestPosition || "—"}</p>
+                                                    <p className="text-sm font-bold text-foreground">{kw.bestPosition || "—"}</p>
                                                     <p className="text-[10px] text-muted-foreground">Best</p>
                                                 </div>
                                                 <div className="text-center">
@@ -316,10 +339,10 @@ export default function RankTracker() {
 
                                         {/* Actions */}
                                         <div className="flex items-center gap-1.5 shrink-0">
-                                            <Link to={`/rank/${kw._id}`} className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-primary transition-all" title="View Details">
+                                            <Link to={`/rank/${kw._id}`} className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-purple-accent transition-all" title="View Details">
                                                 <ExternalLink size={16} />
                                             </Link>
-                                            <button onClick={() => handleRefresh(kw._id)} disabled={refreshing === kw._id || kw.status === "checking"} className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-primary transition-all disabled:opacity-30" title="Refresh Ranking">
+                                            <button onClick={() => handleRefresh(kw._id)} disabled={refreshing === kw._id || kw.status === "checking"} className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-purple-accent transition-all disabled:opacity-30" title="Refresh Ranking">
                                                 <RefreshCw size={16} className={refreshing === kw._id ? "animate-spin" : ""} />
                                             </button>
                                             <button
@@ -379,7 +402,7 @@ export default function RankTracker() {
                                         onChange={(e) => setNewKeyword(e.target.value)}
                                         placeholder='e.g., "best seo tools"'
                                         required
-                                        className="w-full pl-11 pr-4 py-3 rounded-xl bg-muted border border-border text-foreground placeholder-muted-foreground outline-none focus:border-primary/50 transition-colors text-sm"
+                                        className="w-full pl-11 pr-4 py-3 rounded-xl bg-muted border border-border text-foreground placeholder-muted-foreground outline-none focus:border-purple-accent/50 focus:ring-2 focus:ring-purple-accent/10 transition-all text-sm"
                                     />
                                 </div>
                             </div>
@@ -396,16 +419,16 @@ export default function RankTracker() {
                                         onChange={(e) => setNewUrl(e.target.value)}
                                         placeholder="e.g., example.com"
                                         required
-                                        className="w-full pl-11 pr-4 py-3 rounded-xl bg-muted border border-border text-foreground placeholder-muted-foreground outline-none focus:border-primary/50 transition-colors text-sm"
+                                        className="w-full pl-11 pr-4 py-3 rounded-xl bg-muted border border-border text-foreground placeholder-muted-foreground outline-none focus:border-purple-accent/50 focus:ring-2 focus:ring-purple-accent/10 transition-all text-sm"
                                     />
                                 </div>
                             </div>
 
-                            <div className="bg-primary/5 border border-primary/20 rounded-xl p-3 text-xs text-muted-foreground">
+                            <div className="bg-purple-accent/5 border border-purple-accent/20 rounded-xl p-3 text-xs text-muted-foreground">
                                 <p>💡 We'll search Google for your keyword, find your website's position (up to page 5), and track it daily.</p>
                             </div>
 
-                            <button type="submit" disabled={adding} className="w-full py-3 rounded-xl bg-primary font-semibold text-sm text-primary-foreground flex items-center justify-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50" style={{ color: "var(--background)" }}>
+                            <button type="submit" disabled={adding} className="w-full py-3 rounded-xl bg-primary font-semibold text-sm text-primary-foreground flex items-center justify-center gap-2 hover:opacity-90 hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50" style={{ color: "var(--background)" }}>
                                 {adding ? (
                                     <Loader2 size={18} className="animate-spin" />
                                 ) : (

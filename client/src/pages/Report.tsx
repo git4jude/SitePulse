@@ -68,7 +68,7 @@ const HEADING_ALPHAS = [1, 0.85, 0.7, 0.55, 0.42, 0.3];
 function CategoryStat({ icon, label, value }: { icon: React.ReactNode; label: string; value: number }) {
     const color = scoreColor(value);
     return (
-        <div className="flex flex-1 flex-col items-center sm:items-start gap-1.5 px-4 first:pl-0 last:pr-0">
+        <div className="flex flex-col items-center sm:items-start gap-1.5 sm:flex-1 sm:px-4 sm:first:pl-0 sm:last:pr-0">
             <div className="flex items-center gap-1.5 text-muted-foreground">
                 {icon}
                 <span className="text-[10px] font-semibold uppercase tracking-wider">{label}</span>
@@ -85,7 +85,7 @@ function CategoryStat({ icon, label, value }: { icon: React.ReactNode; label: st
 
 function MetricInline({ icon, value, label }: { icon: React.ReactNode; value: string; label: string }) {
     return (
-        <div className="flex items-center gap-1.5 px-3 py-1.5">
+        <div className="flex items-center gap-1.5 sm:px-3 sm:py-1.5">
             {icon}
             <span className="font-semibold text-foreground">{value}</span>
             <span className="text-muted-foreground">{label}</span>
@@ -236,7 +236,7 @@ export default function Report() {
 
                         <div className="flex-1 w-full">
                             {/* Category stat strip */}
-                            <div className="flex flex-wrap sm:flex-nowrap items-stretch justify-between gap-y-6 divide-x divide-border/40 pb-6 mb-6 border-b border-border/40">
+                            <div className="grid grid-cols-2 gap-y-6 sm:flex sm:flex-nowrap sm:divide-x sm:divide-border/40 items-stretch justify-between pb-6 mb-6 border-b border-border/40">
                                 <CategoryStat label="SEO" value={analysis.categories.seo} icon={<Search size={13} />} />
                                 <CategoryStat label="Performance" value={analysis.categories.performance} icon={<Clock size={13} />} />
                                 <CategoryStat label="Accessibility" value={analysis.categories.accessibility} icon={<Globe size={13} />} />
@@ -244,7 +244,7 @@ export default function Report() {
                             </div>
 
                             {/* Secondary metrics — single thin stat bar */}
-                            <div className="flex flex-wrap items-center divide-x divide-border/50 rounded-full border border-border/50 bg-muted/20 text-xs w-fit">
+                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 sm:flex-nowrap sm:gap-0 sm:divide-x sm:divide-border/50 rounded-2xl sm:rounded-full border border-border/50 bg-muted/20 text-xs w-fit px-3 py-1.5 sm:px-0 sm:py-0">
                                 <MetricInline icon={<Clock size={12} className="text-muted-foreground" />} value={`${analysis.loadTime}ms`} label="Load Time" />
                                 <MetricInline icon={<HardDrive size={12} className="text-muted-foreground" />} value={`${Math.round(analysis.pageSize / 1024)}KB`} label="Page Size" />
                                 <MetricInline icon={<AlignLeft size={12} className="text-muted-foreground" />} value={analysis.wordCount.toLocaleString()} label="Words" />

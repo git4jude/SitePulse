@@ -171,7 +171,7 @@ export default function Dashboard() {
                             <p className="text-muted-foreground text-sm">Analyze websites and boost your SEO performance.</p>
                         </div>
 
-                        <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+                        <div className="flex flex-wrap items-center gap-3 sm:gap-4 shrink-0">
                             <div className="flex items-center gap-3 rounded-2xl border border-border/60 bg-card/60 backdrop-blur-sm px-4 py-3">
                                 <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
                                     <ScanSearchIcon size={16} />

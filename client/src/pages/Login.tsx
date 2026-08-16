@@ -38,7 +38,7 @@ export default function Login({ state }: { state: string }) {
     return (
         <div className="h-screen w-screen flex overflow-hidden">
             {/* Left Panel - Image */}
-            <div className="w-[45%] shrink-0 relative z-10 overflow-hidden bg-black shadow-2xl">
+            <div className="hidden lg:block lg:w-[45%] shrink-0 relative z-10 overflow-hidden bg-black shadow-2xl">
                 <button
                     onClick={() => navigate("/")}
                     className="absolute top-6 left-6 z-10 w-10 h-10 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-[#9333EA]/70 transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a78bfa]"
@@ -50,12 +50,19 @@ export default function Login({ state }: { state: string }) {
 
             {/* Right Panel - Form */}
             <div
-                className="flex-1 relative flex flex-col items-center justify-center bg-background border-l border-border px-6 sm:px-12 lg:px-20 overflow-y-auto overflow-x-hidden"
+                className="flex-1 relative flex flex-col items-center justify-center bg-background lg:border-l lg:border-border px-6 sm:px-12 lg:px-20 overflow-y-auto overflow-x-hidden"
                 style={{
                     backgroundImage: "radial-gradient(circle, rgba(147, 51, 234, 0.18) 1px, transparent 1px)",
                     backgroundSize: "22px 22px",
                 }}
             >
+                <button
+                    onClick={() => navigate("/")}
+                    className="lg:hidden absolute top-4 left-4 z-10 w-10 h-10 bg-muted/60 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-[#9333EA]/20 transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a78bfa]"
+                    aria-label="Back to home"
+                >
+                    <ArrowLeft className="w-5 h-5 text-foreground" />
+                </button>
                 <div className="relative w-full max-w-md py-12">
                     <div className="signin-fade-in flex items-center justify-center gap-2 mb-10" style={{ "--signin-delay": "0ms" } as React.CSSProperties}>
                         <Activity className="text-[#9333EA]" size={26} />

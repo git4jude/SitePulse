@@ -2,7 +2,9 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Clock, Trash2, ExternalLink, Search, AlertCircle, Loader2, Filter, ArrowUpDown, ScanSearchIcon } from "lucide-react";
+import { toast } from "react-hot-toast";
 import ScoreGauge from "../components/ScoreGauge";
+import ConfirmDialog from "../components/ConfirmDialog";
 import { useUser } from "../context/UserContext";
 
 interface AnalysisItem {
@@ -35,6 +37,7 @@ export default function History() {
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [deleting, setDeleting] = useState<string | null>(null);
+    const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
     const [sortBy, setSortBy] = useState("newest");
@@ -49,18 +52,20 @@ export default function History() {
             }
         } catch (error) {
             console.error("Failed to fetch analyses", error);
+            toast.error("Failed to load analysis history");
         }
         setLoading(false);
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm("Delete this analysis?")) return;
         setDeleting(id);
         try {
             await api.delete(`/analysis/${id}`);
             setAnalyses((prev) => prev.filter((a) => a._id !== id));
+            toast.success("Analysis deleted");
         } catch (error) {
             console.error("Failed to delete analysis", error);
+            toast.error("Failed to delete analysis");
         }
         setDeleting(null);
     };
@@ -239,7 +244,7 @@ export default function History() {
                                     <Link to={`/report/${a._id}`} className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-purple-accent transition-all" title="View Report">
                                         <ExternalLink size={16} />
                                     </Link>
-                                    <button onClick={() => handleDelete(a._id)} disabled={deleting === a._id} className="p-2 rounded-lg hover:bg-danger/10 text-muted-foreground hover:text-danger transition-all disabled:opacity-50" title="Delete">
+                                    <button onClick={() => setConfirmDeleteId(a._id)} disabled={deleting === a._id} className="p-2 rounded-lg hover:bg-danger/10 text-muted-foreground hover:text-danger transition-all disabled:opacity-50" title="Delete">
                                         {deleting === a._id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
                                     </button>
                                 </div>
@@ -263,6 +268,17 @@ export default function History() {
                     </div>
                 )}
             </div>
+
+            <ConfirmDialog
+                open={!!confirmDeleteId}
+                title="Delete this analysis?"
+                message="This will permanently remove the analysis and its report. This can't be undone."
+                onCancel={() => setConfirmDeleteId(null)}
+                onConfirm={() => {
+                    if (confirmDeleteId) handleDelete(confirmDeleteId);
+                    setConfirmDeleteId(null);
+                }}
+            />
         </div>
     );
 }

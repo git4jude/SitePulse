@@ -20,11 +20,33 @@ export default function App() {
 
     const hideNavbar = ["/", "/login", "/register"].includes(location.pathname);
 
-    if(loading) return < Loading />
+    if(loading) return <Loading />
 
     return (
         <>
-            <Toaster />
+            <Toaster
+                position="top-center"
+                toastOptions={{
+                    duration: 3500,
+                    style: {
+                        background: "#ffffff",
+                        color: "#111827",
+                        border: "1px solid #e5e7eb",
+                        borderRadius: "0.75rem",
+                        padding: "10px 14px",
+                        fontSize: "0.875rem",
+                        boxShadow: "0 10px 30px rgba(0,0,0,0.18)",
+                    },
+                    success: {
+                        iconTheme: { primary: "var(--ring-success)", secondary: "#ffffff" },
+                        style: { border: "1px solid rgba(16,185,129,0.3)" },
+                    },
+                    error: {
+                        iconTheme: { primary: "var(--ring-danger)", secondary: "#ffffff" },
+                        style: { border: "1px solid rgba(239,68,68,0.3)" },
+                    },
+                }}
+            />
             {!hideNavbar && <Navbar />}
             <Routes>
                 <Route path="/" element={<Home />} />

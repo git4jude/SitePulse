@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, Target, Globe, Clock, TrendingUp, TrendingDown, Minus, RefreshCw, AlertCircle, ExternalLink, Trophy, Users, Calendar, Loader2 } from "lucide-react";
+import { toast } from "react-hot-toast";
 import { useUser } from "../context/UserContext";
 
 interface RankHistoryEntry {
@@ -79,6 +80,8 @@ export default function RankDetail() {
                             clearInterval(pollInterval);
                             setTracking(check.data.keyword);
                             setRefreshing(false);
+                            if (check.data.keyword.status === "completed") toast.success("Ranking updated");
+                            else toast.error("Ranking check failed");
                         }
                     } catch (error) {
                         console.error(error);
@@ -89,6 +92,7 @@ export default function RankDetail() {
             }
         } catch (error) {
             console.error("Failed to refresh tracking", error);
+            toast.error("Failed to refresh keyword");
             setRefreshing(false);
         }
     };

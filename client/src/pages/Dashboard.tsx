@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { SearchIcon, ArrowRightIcon, ScanSearchIcon, ZapIcon, TargetIcon, TrendingUpIcon, TrendingDownIcon, MinusIcon, SparklesIcon } from "lucide-react";
+import { toast } from "react-hot-toast";
 import AnalysesCard from "../components/AnalysesCard";
 import { useUser } from "../context/UserContext";
 
@@ -90,6 +91,7 @@ export default function Dashboard() {
             }
         } catch (error) {
             console.error("Failed to fetch analyses", error);
+            toast.error("Failed to load recent analyses");
         }
         setLoading(false);
     };
@@ -102,6 +104,7 @@ export default function Dashboard() {
             }
         } catch (error) {
             console.error("Failed to fetch keywords", error);
+            toast.error("Failed to load tracked keywords");
         }
         setKeywordsLoading(false);
     };

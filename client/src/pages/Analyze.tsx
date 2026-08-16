@@ -2,7 +2,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
-import { SearchIcon, GlobeIcon, FileSearchIcon, BrainIcon, CheckCircleIcon, AlertCircle, Loader2, ArrowRightIcon, SparklesIcon, ZapIcon, AccessibilityIcon, ShieldCheckIcon, LinkIcon, FileTextIcon } from "lucide-react";
+import { SearchIcon, GlobeIcon, FileSearchIcon, BrainIcon, CheckCircleIcon, Loader2, ArrowRightIcon, SparklesIcon, ZapIcon, AccessibilityIcon, ShieldCheckIcon, LinkIcon, FileTextIcon } from "lucide-react";
+import { toast } from "react-hot-toast";
 import { useUser } from "../context/UserContext";
 
 const STEPS = [
@@ -45,7 +46,6 @@ export default function Analyze() {
     const [url, setUrl] = useState("");
     const [analyzing, setAnalyzing] = useState(false);
     const [currentStep, setCurrentStep] = useState(0);
-    const [error, setError] = useState("");
     const [focused, setFocused] = useState(false);
     const [recentScans, setRecentScans] = useState<RecentScan[]>([]);
     const [searchParams] = useSearchParams();
@@ -57,7 +57,6 @@ export default function Analyze() {
         const targetUrl = submitUrl || url;
         if (!targetUrl.trim()) return;
 
-        setError("");
         setAnalyzing(true);
         setCurrentStep(0);
 
@@ -83,7 +82,7 @@ export default function Analyze() {
             attempts++;
             if(attempts > maxAttempts){
                 if(pollRef.current) clearInterval(pollRef.current)
-                    setError("Analysis is checking longer the expected check your history later");
+                    toast.error("Analysis is taking longer than expected — check your history later.");
                 setAnalyzing(false);
                 return
             }
@@ -97,7 +96,7 @@ export default function Analyze() {
                     setTimeout(() => navigate(`/report/${id}`), 1000)
                 }else if(analysis.status === "failed"){
                     if(pollRef.current) clearInterval(pollRef.current)
-                        setError("Analysis Failed..the AI model might be down.")
+                        toast.error("Analysis failed — the AI model might be down.")
                     setAnalyzing(false)
                 }else{
                     // still processing - advance visual steps
@@ -109,7 +108,7 @@ export default function Analyze() {
             }
         }, 2000)
       } catch (err: any) {
-        setError(err.response?.data?.message || err.message || "Failed to start analysis")
+        toast.error(err.response?.data?.message || err.message || "Failed to start analysis")
         setAnalyzing(false)
       }
     };
@@ -163,13 +162,6 @@ export default function Analyze() {
                             </h1>
                             <p className="text-muted-foreground text-base sm:text-lg">Enter a URL to get a comprehensive AI-powered SEO audit report in seconds.</p>
                         </div>
-
-                        {error && (
-                            <div className="mb-6 px-4 py-3 rounded-xl severity-critical text-sm flex items-center gap-2 max-w-xl mx-auto">
-                                <AlertCircle size={18} className="shrink-0" />
-                                {error}
-                            </div>
-                        )}
 
                         {/* Search — glowing gradient-border focal point */}
                         <form onSubmit={handleSubmit} className="max-w-xl mx-auto mb-6">

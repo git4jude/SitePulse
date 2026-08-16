@@ -2,7 +2,9 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Target, Plus, RefreshCw, Trash2, TrendingUp, TrendingDown, Minus, ExternalLink, Clock, Loader2, X, Search, Globe, AlertCircle, Eye, EyeOff, Filter, ArrowUpDown } from "lucide-react";
+import { Target, Plus, RefreshCw, Trash2, TrendingUp, TrendingDown, Minus, ExternalLink, Clock, Loader2, X, Search, Globe, Eye, EyeOff, Filter, ArrowUpDown } from "lucide-react";
+import { toast } from "react-hot-toast";
+import ConfirmDialog from "../components/ConfirmDialog";
 import { useUser } from "../context/UserContext";
 
 interface KeywordItem {
@@ -32,9 +34,9 @@ export default function RankTracker() {
     const [newKeyword, setNewKeyword] = useState("");
     const [newUrl, setNewUrl] = useState("");
     const [adding, setAdding] = useState(false);
-    const [addError, setAddError] = useState("");
     const [refreshing, setRefreshing] = useState<string | null>(null);
     const [deleting, setDeleting] = useState<string | null>(null);
+    const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
     const [sortBy, setSortBy] = useState("newest");
@@ -47,6 +49,7 @@ export default function RankTracker() {
             }
         } catch (error) {
             console.error("Failed to fetch keywords", error)
+            toast.error("Failed to load tracked keywords")
         }
         setLoading(false)
     };
@@ -55,7 +58,6 @@ export default function RankTracker() {
         e.preventDefault();
         if(!newKeyword.trim() || !newUrl.trim()) return;
         setAdding(true);
-        setAddError("");
         try {
             const res = await api.post('/rank/add', {
                 keyword: newKeyword.trim(),
@@ -66,6 +68,7 @@ export default function RankTracker() {
                 setNewKeyword("")
                 setNewUrl("")
                 setShowAddModal(false);
+                toast.success("Keyword tracking started")
 
                 //poll for completion
                 const id = res.data.tracking._id;
@@ -82,7 +85,7 @@ export default function RankTracker() {
                 },3000)
             }
         } catch (error: any) {
-            setAddError(error.response?.data?.message || "Failed to add keyword")
+            toast.error(error.response?.data?.message || "Failed to add keyword")
             console.error(error)
         }
         setAdding(false)
@@ -102,6 +105,8 @@ export default function RankTracker() {
                             clearInterval(pollInterval);
                             setKeywords((prev) => prev.map((k) => (k._id === id ? check.data.keyword : k)));
                             setRefreshing(null);
+                            if (check.data.keyword.status === "completed") toast.success("Ranking updated");
+                            else toast.error("Ranking check failed");
                         }
                     } catch (error) {
                         console.error(error);
@@ -112,30 +117,34 @@ export default function RankTracker() {
             }
         } catch (error) {
             console.error("Failed to refresh keyword", error);
+            toast.error("Failed to refresh keyword");
             setRefreshing(null);
         }
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm("Delete this keyword tracking?")) return;
         setDeleting(id);
         try {
             await api.delete(`/rank/${id}`);
             setKeywords((prev) => prev.filter((k) => k._id !== id));
+            toast.success("Keyword deleted");
         } catch (error) {
             console.error("Failed to delete keyword", error);
+            toast.error("Failed to delete keyword");
         }
         setDeleting(null);
     };
 
-    const handleToggle = async (id: string) => {
+    const handleToggle = async (id: string, keyword: string) => {
         try {
             const res = await api.patch(`/rank/${id}/toggle`);
             if (res.data.success) {
                 setKeywords((prev) => prev.map((k) => (k._id === id ? { ...k, active: res.data.active } : k)));
+                toast.success(res.data.active ? `Resumed tracking "${keyword}"` : `Paused tracking "${keyword}"`);
             }
         } catch (error) {
             console.error("Failed to toggle keyword", error);
+            toast.error("Failed to update keyword");
         }
     };
 
@@ -346,13 +355,13 @@ export default function RankTracker() {
                                                 <RefreshCw size={16} className={refreshing === kw._id ? "animate-spin" : ""} />
                                             </button>
                                             <button
-                                                onClick={() => handleToggle(kw._id)}
+                                                onClick={() => handleToggle(kw._id, kw.keyword)}
                                                 className={`p-2 rounded-lg hover:bg-muted transition-all ${kw.active ? "text-success hover:text-success" : "text-muted-foreground hover:text-foreground"}`}
                                                 title={kw.active ? "Pause Tracking" : "Resume Tracking"}
                                             >
                                                 {kw.active ? <Eye size={16} /> : <EyeOff size={16} />}
                                             </button>
-                                            <button onClick={() => handleDelete(kw._id)} disabled={deleting === kw._id} className="p-2 rounded-lg hover:bg-danger/10 text-muted-foreground hover:text-danger transition-all disabled:opacity-50" title="Delete">
+                                            <button onClick={() => setConfirmDeleteId(kw._id)} disabled={deleting === kw._id} className="p-2 rounded-lg hover:bg-danger/10 text-muted-foreground hover:text-danger transition-all disabled:opacity-50" title="Delete">
                                                 {deleting === kw._id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
                                             </button>
                                         </div>
@@ -371,22 +380,12 @@ export default function RankTracker() {
                         <div className="flex items-center justify-between mb-6">
                             <h2 className="text-lg font-bold text-foreground">Track New Keyword</h2>
                             <button
-                                onClick={() => {
-                                    setShowAddModal(false);
-                                    setAddError("");
-                                }}
+                                onClick={() => setShowAddModal(false)}
                                 className="text-muted-foreground hover:text-foreground"
                             >
                                 <X size={20} />
                             </button>
                         </div>
-
-                        {addError && (
-                            <div className="mb-4 px-4 py-3 rounded-xl severity-critical text-sm flex items-center gap-2">
-                                <AlertCircle size={16} className="shrink-0" />
-                                {addError}
-                            </div>
-                        )}
 
                         <form onSubmit={handleAdd} className="space-y-4">
                             <div>
@@ -442,6 +441,17 @@ export default function RankTracker() {
                     </div>
                 </div>
             )}
+
+            <ConfirmDialog
+                open={!!confirmDeleteId}
+                title="Delete this keyword tracking?"
+                message="This will stop tracking this keyword and permanently remove its ranking history. This can't be undone."
+                onCancel={() => setConfirmDeleteId(null)}
+                onConfirm={() => {
+                    if (confirmDeleteId) handleDelete(confirmDeleteId);
+                    setConfirmDeleteId(null);
+                }}
+            />
         </div>
     );
 }

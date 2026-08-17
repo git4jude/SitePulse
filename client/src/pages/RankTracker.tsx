@@ -392,8 +392,8 @@ export default function RankTracker() {
                                 <label htmlFor="modal-keyword" className="block text-sm font-medium text-foreground mb-1.5">
                                     Keyword
                                 </label>
-                                <div className="relative">
-                                    <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                                <div className="flex items-center gap-3 w-full pl-3.5 pr-4 py-3 rounded-xl bg-muted border border-border focus-within:border-purple-accent/50 focus-within:ring-2 focus-within:ring-purple-accent/10 transition-all">
+                                    <Search size={18} className="shrink-0 text-muted-foreground" />
                                     <input
                                         id="modal-keyword"
                                         type="text"
@@ -401,7 +401,7 @@ export default function RankTracker() {
                                         onChange={(e) => setNewKeyword(e.target.value)}
                                         placeholder='e.g., "best seo tools"'
                                         required
-                                        className="w-full pl-11 pr-4 py-3 rounded-xl bg-muted border border-border text-foreground placeholder-muted-foreground outline-none focus:border-purple-accent/50 focus:ring-2 focus:ring-purple-accent/10 transition-all text-sm"
+                                        className="w-full bg-transparent text-foreground placeholder-muted-foreground outline-none text-sm"
                                     />
                                 </div>
                             </div>
@@ -409,8 +409,8 @@ export default function RankTracker() {
                                 <label htmlFor="modal-url" className="block text-sm font-medium text-foreground mb-1.5">
                                     Website URL
                                 </label>
-                                <div className="relative">
-                                    <Globe size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                                <div className="flex items-center gap-3 w-full pl-3.5 pr-4 py-3 rounded-xl bg-muted border border-border focus-within:border-purple-accent/50 focus-within:ring-2 focus-within:ring-purple-accent/10 transition-all">
+                                    <Globe size={18} className="shrink-0 text-muted-foreground" />
                                     <input
                                         id="modal-url"
                                         type="text"
@@ -418,7 +418,7 @@ export default function RankTracker() {
                                         onChange={(e) => setNewUrl(e.target.value)}
                                         placeholder="e.g., example.com"
                                         required
-                                        className="w-full pl-11 pr-4 py-3 rounded-xl bg-muted border border-border text-foreground placeholder-muted-foreground outline-none focus:border-purple-accent/50 focus:ring-2 focus:ring-purple-accent/10 transition-all text-sm"
+                                        className="w-full bg-transparent text-foreground placeholder-muted-foreground outline-none text-sm"
                                     />
                                 </div>
                             </div>
